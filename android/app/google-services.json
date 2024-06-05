@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "207956747286",
+    "project_id": "antimubazir-474ad",
+    "storage_bucket": "antimubazir-474ad.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:207956747286:android:dc147c2c587b4f91298137",
+        "android_client_info": {
+          "package_name": "com.khai.anti"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBplPge7MJjsZn7JOv3n5vrF8dDUTM-Bl0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
