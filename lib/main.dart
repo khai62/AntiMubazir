@@ -11,7 +11,7 @@ Future<void> main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  PermissionService().startTracking();
+  // PermissionService().startTracking();
 
   runApp(const MyApp());
 }
@@ -25,7 +25,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  late Future<Map<String, bool>> _initScreens;
+  late Future<Map<String, dynamic>> _initScreens;
 
   @override
   void initState() {
@@ -33,22 +33,25 @@ class _MyAppState extends State<MyApp> {
     _initScreens = _getInitScreens();
   }
 
-  Future<Map<String, bool>> _getInitScreens() async {
+  Future<Map<String, dynamic>> _getInitScreens() async {
     SharedPreferences preferences = await SharedPreferences.getInstance();
     bool onbordingShown = preferences.getBool('onbordingShown') ?? false;
     bool loginShown = preferences.getBool('loginShown') ?? false;
+    String? userType = preferences
+        .getString('userType'); // Tambahkan ini untuk mendapatkan userType
 
     await preferences.setBool('onbordingShown', true);
 
     return {
       'onbordingShown': onbordingShown,
       'loginShown': loginShown,
+      'userType': userType,
     };
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<Map<String, bool>>(
+    return FutureBuilder<Map<String, dynamic>>(
       future: _initScreens,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -60,9 +63,10 @@ class _MyAppState extends State<MyApp> {
             ),
           );
         } else {
-          Map<String, bool> initScreens = snapshot.data!;
+          Map<String, dynamic> initScreens = snapshot.data!;
           bool onbordingShown = initScreens['onbordingShown']!;
           bool loginShown = initScreens['loginShown']!;
+          String? userType = initScreens['userType'];
 
           String initialRoute;
           if (!onbordingShown) {
@@ -70,12 +74,17 @@ class _MyAppState extends State<MyApp> {
           } else if (!loginShown) {
             initialRoute = 'loginscreen';
           } else {
-            initialRoute = 'navigationscreen';
+            initialRoute = userType == 'Donatur'
+                ? 'navigasidonatur'
+                : 'navigasipenerimadonasi';
           }
+
           return MaterialApp(
             initialRoute: initialRoute,
             routes: {
-              'navigationscreen': (context) => const NavigationScreen(),
+              'navigasidonatur': (context) => const NavigationDonatur(),
+              'navigasipenerimadonasi': (context) =>
+                  const NavigationPenerimaDonasi(),
               'onbording': (context) => const Onbording(),
               'loginscreen': (context) => const LoginScreen(),
             },

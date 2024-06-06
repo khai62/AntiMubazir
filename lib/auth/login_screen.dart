@@ -1,27 +1,40 @@
 import 'package:flutter/material.dart';
 import 'package:anti/pustaka.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class RegisterScreen extends StatefulWidget {
-  const RegisterScreen({super.key});
+class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
 
   @override
-  State<RegisterScreen> createState() => _RegisterScreenState();
+  State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _RegisterScreenState extends State<RegisterScreen> {
+class _LoginScreenState extends State<LoginScreen> {
   final _auth = AuthService();
 
-  final _name = TextEditingController();
   final _email = TextEditingController();
   final _password = TextEditingController();
 
   @override
   void dispose() {
     super.dispose();
-    _name.dispose();
     _email.dispose();
     _password.dispose();
   }
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   Future.delayed(const Duration(seconds: 4), () {
+  //     goToHome(context, 'userType');
+  //   });
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +56,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   const SizedBox(
                     height: 10,
                   ),
-                  const Text('Silahkan daftar menggunakan email',
+                  const Text('Silahkan masuk menggunakan email',
                       style:
                           TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
                 ],
@@ -54,23 +67,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
               Column(
                 children: [
                   TextFormField(
-                    controller: _name,
-                    keyboardType: TextInputType.name,
-                    style: const TextStyle(fontSize: 14, color: Colors.black),
-                    decoration: const InputDecoration(
-                        hintText: 'Name',
-                        enabledBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(
-                          color: Colors.black,
-                        ))),
-                  ),
-                  const SizedBox(
-                    height: 24,
-                  ),
-                  TextFormField(
                     controller: _email,
-                    style: const TextStyle(fontSize: 14, color: Colors.black),
                     keyboardType: TextInputType.emailAddress,
+                    style: const TextStyle(fontSize: 14, color: Colors.black),
                     decoration: const InputDecoration(
                         hintText: 'Email',
                         enabledBorder: UnderlineInputBorder(
@@ -93,10 +92,24 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           color: Colors.black,
                         ))),
                   ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      TextButton(
+                          onPressed: () {},
+                          child: const Text(
+                            'Lupa Password?',
+                            style: TextStyle(color: Colors.blue, fontSize: 14),
+                          ))
+                    ],
+                  )
                 ],
               ),
               const SizedBox(
-                height: 60,
+                height: 40,
               ),
               Column(
                 children: [
@@ -109,10 +122,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       borderRadius: BorderRadius.all(Radius.circular(25)),
                     ),
                     child: TextButton(
-                      onPressed: _signup,
+                      onPressed: _login,
                       child: const Text(
                         textAlign: TextAlign.center,
-                        'Daftar',
+                        'Masuk',
                         style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 18,
@@ -126,16 +139,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   Row(
                     children: [
                       const Text(
-                        'Sudah punya akun?',
+                        'Belum punya akun?',
                         style: TextStyle(fontSize: 14, color: Colors.black),
                       ),
                       TextButton(
                         onPressed: () => Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => const LoginScreen())),
+                                builder: (context) => const RegisterScreen())),
                         child: const Text(
-                          'Masuk',
+                          'Daftar',
                           style: TextStyle(fontSize: 14, color: Colors.blue),
                         ),
                       )
@@ -150,21 +163,73 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  goToLogin(BuildContext contex) => Navigator.push(
-      context, MaterialPageRoute(builder: (context) => const LoginScreen()));
-  goToHome(BuildContext contex) => Navigator.push(
-      context, MaterialPageRoute(builder: (context) => const SplashScreen()));
+  goToSignup(BuildContext context) => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const RegisterScreen()),
+      );
 
-  Future<void> _signup() async {
-    final name = _name.text;
-    final email = _email.text;
-    final password = _password.text;
+  // goToHome(BuildContext context, String userType) async {
+  //   SharedPreferences preferences = await SharedPreferences.getInstance();
+  //   await preferences.setBool('loginShown', true);
+  //   await preferences.setString('userType', userType);
 
+  //   if (userType == 'Donatur') {
+  //     Navigator.push(context,
+  //         MaterialPageRoute(builder: (context) => const NavigationDonatur()));
+  //   } else {
+  //     Navigator.push(context,
+  //         MaterialPageRoute(builder: (context) => const HomePenerimaDonasi()));
+  //   }
+  // }
+
+  _login() async {
     final user =
-        await _auth.createUserWithEmailAndPassword(email, password, name);
+        await _auth.loginUserWithEmailAndPassword(_email.text, _password.text);
+
     if (user != null) {
-      print('register successful');
-      goToHome(context);
+      final userType = await _getUserType(user.uid);
+      if (userType != null) {
+        print('login successful');
+        goToHome(context, userType);
+      } else {
+        print('User type not found');
+        // Handle situation where user type is not found
+      }
+    } else {
+      print('Login failed');
+      // Handle failed login
+    }
+  }
+
+  Future<String?> _getUserType(String userId) async {
+    try {
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .get();
+      if (doc.exists) {
+        return doc.data()?['userType'];
+      }
+    } catch (e) {
+      print('Error getting user type: $e');
+      // Handle error getting user type
+    }
+    return null;
+  }
+
+  void goToHome(BuildContext context, String userType) async {
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    await preferences.setBool('loginShown', true);
+    await preferences.setString('userType', userType);
+
+    if (userType == 'Donatur') {
+      Navigator.pushReplacement(context,
+          MaterialPageRoute(builder: (context) => const NavigationDonatur()));
+    } else {
+      Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+              builder: (context) => const NavigationPenerimaDonasi()));
     }
   }
 }

@@ -40,6 +40,8 @@ flutter:
     - assets/images/ponsel.png
     - assets/images/lokasi.png
     - assets/images/person.png
+    - assets/images/donasimasuk.png
+    - assets/images/penerimadonasi.png
 
   # example:
   # fonts:

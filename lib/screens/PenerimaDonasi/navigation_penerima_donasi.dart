@@ -1,14 +1,17 @@
+import 'package:anti/screens/PenerimaDonasi/donasi_masuk.dart';
 import 'package:flutter/material.dart';
 import 'package:anti/pustaka.dart';
 
-class NavigationScreen extends StatefulWidget {
-  const NavigationScreen({super.key});
+class NavigationPenerimaDonasi extends StatefulWidget {
+  const NavigationPenerimaDonasi({super.key});
 
   @override
-  State<NavigationScreen> createState() => _NavigationScreenState();
+  // ignore: library_private_types_in_public_api
+  _NavigationPenerimaDonasiState createState() =>
+      _NavigationPenerimaDonasiState();
 }
 
-class _NavigationScreenState extends State<NavigationScreen> {
+class _NavigationPenerimaDonasiState extends State<NavigationPenerimaDonasi> {
   int _selectedIndex = 0;
 
   void _onItemTapped(int index) {
@@ -23,10 +26,11 @@ class _NavigationScreenState extends State<NavigationScreen> {
       body: IndexedStack(
         index: _selectedIndex,
         children: const <Widget>[
-          HomeScreen(),
-          AllScreen(),
-          Notifikasi(),
-          Person('Akun Saya'),
+          HomePenerimaDonasi(),
+          DonasiMasuk(),
+          AddPostingan(),
+          NotifikasiPenerimaDonasi(),
+          PersonPenerimaDonasi('Akun Saya'),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
@@ -43,11 +47,15 @@ class _NavigationScreenState extends State<NavigationScreen> {
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.all_inclusive),
-            label: 'Troli',
+            label: 'donasimasuk',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.add),
+            label: 'addpostingan',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.notifications),
-            label: 'Message',
+            label: 'notifikasi',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person),

@@ -475,7 +475,7 @@ class _AddScreenState extends State<AddScreen> {
                       Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => const NavigationScreen()));
+                              builder: (context) => const NavigationDonatur()));
 
                       setState(() {
                         _controllerName.clear();

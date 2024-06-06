@@ -1,23 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:anti/pustaka.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+class RegisterScreen extends StatefulWidget {
+  const RegisterScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<RegisterScreen> createState() => _RegisterScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _RegisterScreenState extends State<RegisterScreen> {
   final _auth = AuthService();
 
+  final _name = TextEditingController();
   final _email = TextEditingController();
   final _password = TextEditingController();
+  String userType = 'Donatur'; // Default user type
 
   @override
   void dispose() {
     super.dispose();
+    _name.dispose();
     _email.dispose();
     _password.dispose();
   }
@@ -42,7 +44,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(
                     height: 10,
                   ),
-                  const Text('Silahkan masuk menggunakan email',
+                  const Text('Silahkan daftar menggunakan email',
                       style:
                           TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
                 ],
@@ -53,9 +55,23 @@ class _LoginScreenState extends State<LoginScreen> {
               Column(
                 children: [
                   TextFormField(
-                    controller: _email,
-                    keyboardType: TextInputType.emailAddress,
+                    controller: _name,
+                    keyboardType: TextInputType.name,
                     style: const TextStyle(fontSize: 14, color: Colors.black),
+                    decoration: const InputDecoration(
+                        hintText: 'Name',
+                        enabledBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(
+                          color: Colors.black,
+                        ))),
+                  ),
+                  const SizedBox(
+                    height: 24,
+                  ),
+                  TextFormField(
+                    controller: _email,
+                    style: const TextStyle(fontSize: 14, color: Colors.black),
+                    keyboardType: TextInputType.emailAddress,
                     decoration: const InputDecoration(
                         hintText: 'Email',
                         enabledBorder: UnderlineInputBorder(
@@ -79,23 +95,27 @@ class _LoginScreenState extends State<LoginScreen> {
                         ))),
                   ),
                   const SizedBox(
-                    height: 10,
+                    height: 24,
                   ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      TextButton(
-                          onPressed: () {},
-                          child: const Text(
-                            'Lupa Password?',
-                            style: TextStyle(color: Colors.blue, fontSize: 14),
-                          ))
-                    ],
-                  )
+                  DropdownButton<String>(
+                    value: userType,
+                    items: <String>['Donatur', 'Penerima Donasi']
+                        .map((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        userType = value!;
+                      });
+                    },
+                  ),
                 ],
               ),
               const SizedBox(
-                height: 40,
+                height: 60,
               ),
               Column(
                 children: [
@@ -108,10 +128,10 @@ class _LoginScreenState extends State<LoginScreen> {
                       borderRadius: BorderRadius.all(Radius.circular(25)),
                     ),
                     child: TextButton(
-                      onPressed: _login,
+                      onPressed: _signup,
                       child: const Text(
                         textAlign: TextAlign.center,
-                        'Masuk',
+                        'Daftar',
                         style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 18,
@@ -125,16 +145,16 @@ class _LoginScreenState extends State<LoginScreen> {
                   Row(
                     children: [
                       const Text(
-                        'Belum punya akun?',
+                        'Sudah punya akun?',
                         style: TextStyle(fontSize: 14, color: Colors.black),
                       ),
                       TextButton(
                         onPressed: () => Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => const RegisterScreen())),
+                                builder: (context) => const LoginScreen())),
                         child: const Text(
-                          'Daftar',
+                          'Masuk',
                           style: TextStyle(fontSize: 14, color: Colors.blue),
                         ),
                       )
@@ -149,23 +169,20 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  goToSignup(BuildContext context) => Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const RegisterScreen()),
-      );
-  goToHome(BuildContext context) async {
-    SharedPreferences preferences = await SharedPreferences.getInstance();
-    await preferences.setBool('loginShown', true);
-    Navigator.push(
-        context, MaterialPageRoute(builder: (context) => const SplashScreen()));
-  }
+  goToLogin(BuildContext contex) => Navigator.push(
+      context, MaterialPageRoute(builder: (context) => const LoginScreen()));
+  goToHome(BuildContext contex) => Navigator.push(
+      context, MaterialPageRoute(builder: (context) => const LoginScreen()));
 
-  _login() async {
-    final user =
-        await _auth.loginUserWithEmailAndPassword(_email.text, _password.text);
+  Future<void> _signup() async {
+    final name = _name.text;
+    final email = _email.text;
+    final password = _password.text;
 
+    final user = await _auth.createUserWithEmailAndPassword(
+        email, password, name, userType);
     if (user != null) {
-      print('login successful');
+      print('register successful');
       goToHome(context);
     }
   }

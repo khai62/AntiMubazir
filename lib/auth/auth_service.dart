@@ -6,15 +6,23 @@ import 'package:shared_preferences/shared_preferences.dart';
 class AuthService {
   final _auth = FirebaseAuth.instance;
 
- 
-
   Future<User?> createUserWithEmailAndPassword(
-      String email, String password, String name) async {
+      String email, String password, String name, String userType) async {
     try {
       final cred = await _auth.createUserWithEmailAndPassword(
           email: email, password: password);
 
       await cred.user!.updateDisplayName(name);
+
+      // Simpan data pengguna termasuk userType ke Firestore
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(cred.user!.uid)
+          .set({
+        'email': email,
+        'name': name,
+        'userType': userType,
+      });
 
       // Setelah pengguna berhasil mendaftar, pindahkan data lokasi ke Firestore
       await _saveLocationToFirestore(cred.user!.uid);
