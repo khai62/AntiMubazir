@@ -25,7 +25,7 @@ class _NavigationDonaturState extends State<NavigationDonatur> {
         children: const <Widget>[
           HomeDonatur(),
           PenerimaDonasi(),
-          Notifikasi(),
+          NotifikasiDonatur(),
           Person('Akun Saya'),
         ],
       ),

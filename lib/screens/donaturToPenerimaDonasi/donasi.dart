@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:anti/pustaka.dart';
-import 'package:anti/screens/Donatur/navigation_donatur.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
@@ -11,8 +10,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 class Donasi extends StatefulWidget {
   final String id;
   const Donasi({super.key, required this.id});
-
-  const Donasi.defaultConstructor({super.key, required this.id});
 
   @override
   // ignore: library_private_types_in_public_api
@@ -180,7 +177,7 @@ class _DonasiState extends State<Donasi> {
                 }
               }
               return const Text(
-                'Donase ke',
+                'Donasi ke',
                 overflow: TextOverflow.clip,
                 softWrap: true,
               );
@@ -328,7 +325,10 @@ class _DonasiState extends State<Donasi> {
                 ),
                 const SizedBox(height: 15),
                 DropdownButtonFormField<String>(
-                  value: _selectedDropPoint,
+                  value:
+                      _selectedDropPoint.isEmpty && dropPointsOptions.isNotEmpty
+                          ? dropPointsOptions.first['name']
+                          : _selectedDropPoint,
                   items: dropPointsOptions.map((Map<String, String> option) {
                     return DropdownMenuItem<String>(
                       value: option['name'],
@@ -349,10 +349,7 @@ class _DonasiState extends State<Donasi> {
                     ),
                   ),
                 ),
-
-                const SizedBox(
-                  height: 20,
-                ),
+                const SizedBox(height: 20),
                 TextFormField(
                   controller: _controllerKeterangan,
                   style: const TextStyle(fontSize: 14, color: Colors.black),
@@ -369,7 +366,6 @@ class _DonasiState extends State<Donasi> {
                     return null;
                   },
                 ),
-                const SizedBox(height: 15),
                 const SizedBox(height: 40),
                 InkWell(
                   onTap: () async {
@@ -401,7 +397,7 @@ class _DonasiState extends State<Donasi> {
                         Reference referenceRoot =
                             FirebaseStorage.instance.ref();
                         Reference referenceDirImages =
-                            referenceRoot.child('images');
+                            referenceRoot.child('donasi');
                         Reference referenceImageToUpload =
                             referenceDirImages.child(documentId);
 
@@ -421,7 +417,8 @@ class _DonasiState extends State<Donasi> {
                       });
 
                       Map<String, dynamic> dataToSend = {
-                        'userId': userId,
+                        'userId': widget.id,
+                        'donaturId': userId,
                         'name': itemName,
                         'noHp': itemNoHp,
                         'date': itemDate,
@@ -429,15 +426,29 @@ class _DonasiState extends State<Donasi> {
                         'dropPoints': itemDroupPoin,
                         'keterangan': itemKeterangan,
                         'images': imageUrls,
+                        'timestamp': FieldValue.serverTimestamp(),
                       };
 
                       await _referencee.add(dataToSend);
+
+                      // Tambahkan notifikasi
+                      Map<String, dynamic> notificationData = {
+                        'userId': widget.id, // ID penerima donasi
+                        'donaturId': userId, // ID donatur
+                        'name': itemName,
+                        'message': 'Anda menerima donasi baru.',
+                        'timestamp': FieldValue.serverTimestamp(),
+                      };
+
+                      await FirebaseFirestore.instance
+                          .collection('notifications')
+                          .add(notificationData);
+
                       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                           content: Text('Item added successfully')));
 
                       hideLoadingDialog(context);
 
-                      // Ganti NavigationDonatur dengan halaman yang relevan
                       Navigator.push(
                           context,
                           MaterialPageRoute(

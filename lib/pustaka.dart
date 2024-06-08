@@ -18,6 +18,7 @@ export 'screens/donaturToPenerimaDonasi/tab/postinan.dart';
 export 'screens/donaturToPenerimaDonasi/tab/tentang.dart';
 export 'screens/donaturToPenerimaDonasi/ketentuan_donasi.dart';
 export 'screens/donaturToPenerimaDonasi/donasi.dart';
+export 'screens/donaturToPenerimaDonasi/detail_donasi_masuk.dart';
 
 export 'screens/PenerimaDonasi/home_penerima_donasi.dart';
 export 'screens/PenerimaDonasi/navigation_penerima_donasi.dart';
@@ -25,6 +26,8 @@ export 'screens/PenerimaDonasi/notifikasi_penerima_donasi.dart';
 export 'screens/PenerimaDonasi/person_penerima_donasi.dart';
 export 'screens/PenerimaDonasi/profile_penerima_donasi.dart';
 export 'screens/PenerimaDonasi/add_postingan.dart';
+
+export 'package:anti/screens/PenerimaDonasi/donasi_masuk.dart';
 
 export 'screens/Donatur/navigation_donatur.dart';
 export 'screens/Donatur/home_donatur.dart';

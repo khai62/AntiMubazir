@@ -1,6 +1,6 @@
-import 'package:anti/screens/PenerimaDonasi/donasi_masuk.dart';
 import 'package:flutter/material.dart';
 import 'package:anti/pustaka.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class NavigationPenerimaDonasi extends StatefulWidget {
   const NavigationPenerimaDonasi({super.key});
@@ -22,15 +22,22 @@ class _NavigationPenerimaDonasiState extends State<NavigationPenerimaDonasi> {
 
   @override
   Widget build(BuildContext context) {
+    User? currentUser = FirebaseAuth.instance.currentUser;
+    final String? currentUserId = currentUser?.uid;
+
     return Scaffold(
       body: IndexedStack(
         index: _selectedIndex,
-        children: const <Widget>[
-          HomePenerimaDonasi(),
-          DonasiMasuk(),
-          AddPostingan(),
-          NotifikasiPenerimaDonasi(),
-          PersonPenerimaDonasi('Akun Saya'),
+        children: <Widget>[
+          const HomePenerimaDonasi(),
+          if (currentUserId != null)
+            DonasiMasuk(
+              userId: currentUserId,
+            ),
+          const AddPostingan(),
+          if (currentUserId != null)
+            NotifikasiPenerimaDonasi(userId: currentUserId),
+          const PersonPenerimaDonasi('Akun Saya'),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
