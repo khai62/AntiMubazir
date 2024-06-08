@@ -1,21 +1,22 @@
-import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
 class ProfilePenerimaDonasi extends StatefulWidget {
   const ProfilePenerimaDonasi({super.key});
 
   @override
-  State<ProfilePenerimaDonasi> createState() => _ProfilePenerimaDonasiState();
+  // ignore: library_private_types_in_public_api
+  _ProfilePenerimaDonasiState createState() => _ProfilePenerimaDonasiState();
 }
 
 class _ProfilePenerimaDonasiState extends State<ProfilePenerimaDonasi> {
   final _formKey = GlobalKey<FormState>();
   final _namaController = TextEditingController();
   final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
   final _noHpController = TextEditingController();
   final _alamatController = TextEditingController();
   final _tentangController = TextEditingController();
@@ -26,10 +27,13 @@ class _ProfilePenerimaDonasiState extends State<ProfilePenerimaDonasi> {
   File? _profileImage;
   String? _bannerImageUrl;
   String? _profileImageUrl;
+  bool _isProfileComplete = false;
+  String? _userId;
 
   @override
   void initState() {
     super.initState();
+    _userId = getUserId(); // Dapatkan user ID saat inisialisasi
     addDropPoint();
     _loadProfileData();
   }
@@ -38,7 +42,6 @@ class _ProfilePenerimaDonasiState extends State<ProfilePenerimaDonasi> {
   void dispose() {
     _namaController.dispose();
     _emailController.dispose();
-    _passwordController.dispose();
     _noHpController.dispose();
     _alamatController.dispose();
     _tentangController.dispose();
@@ -51,9 +54,10 @@ class _ProfilePenerimaDonasiState extends State<ProfilePenerimaDonasi> {
   }
 
   Future<void> _loadProfileData() async {
+    if (_userId == null) return; // Pastikan user ID tidak null
     DocumentSnapshot profileData = await FirebaseFirestore.instance
         .collection('profiles')
-        .doc('profileId')
+        .doc(_userId) // Menggunakan user ID sebagai dokumen ID
         .get();
     if (profileData.exists) {
       _namaController.text = profileData['nama'];
@@ -72,6 +76,19 @@ class _ProfilePenerimaDonasiState extends State<ProfilePenerimaDonasi> {
           location: dp['location'],
         ));
       }
+
+      // Cek apakah profil sudah lengkap
+      if (_namaController.text.isNotEmpty &&
+          _emailController.text.isNotEmpty &&
+          _noHpController.text.isNotEmpty &&
+          _alamatController.text.isNotEmpty &&
+          _tentangController.text.isNotEmpty &&
+          _ketentuanController.text.isNotEmpty) {
+        _isProfileComplete = true;
+      } else {
+        _isProfileComplete = false;
+      }
+
       setState(() {});
     }
   }
@@ -98,6 +115,28 @@ class _ProfilePenerimaDonasiState extends State<ProfilePenerimaDonasi> {
     return await snapshot.ref.getDownloadURL();
   }
 
+  void showLoadingDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return const Dialog(
+          child: Padding(
+            padding: EdgeInsets.all(16.0),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(width: 16),
+                Text("Uploading..."),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   Future<void> saveDropPoints() async {
     for (DropPoint dropPoint in dropPoints) {
       await FirebaseFirestore.instance.collection('dropPoints').add({
@@ -112,37 +151,49 @@ class _ProfilePenerimaDonasiState extends State<ProfilePenerimaDonasi> {
       String? bannerImageUrl;
       String? profileImageUrl;
 
-      if (_bannerImage != null) {
-        bannerImageUrl = await _uploadImage(_bannerImage!);
-      }
+      try {
+        showLoadingDialog(context); // Menampilkan loading dialog
 
-      if (_profileImage != null) {
-        profileImageUrl = await _uploadImage(_profileImage!);
-      }
+        if (_bannerImage != null) {
+          bannerImageUrl = await _uploadImage(_bannerImage!);
+        }
 
-      await saveDropPoints();
-      await FirebaseFirestore.instance
-          .collection('profiles')
-          .doc('profileId')
-          .set({
-        'nama': _namaController.text,
-        'email': _emailController.text,
-        'noHp': _noHpController.text,
-        'alamat': _alamatController.text,
-        'tentang': _tentangController.text,
-        'ketentuan': _ketentuanController.text,
-        'bannerImageUrl': bannerImageUrl ?? _bannerImageUrl,
-        'profileImageUrl': profileImageUrl ?? _profileImageUrl,
-        'dropPoints': dropPoints
-            .map((dp) => {
-                  'name': dp.nameController.text,
-                  'location': dp.locationController.text,
-                })
-            .toList(),
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Form data saved successfully')),
-      );
+        if (_profileImage != null) {
+          profileImageUrl = await _uploadImage(_profileImage!);
+        }
+
+        await saveDropPoints();
+
+        await FirebaseFirestore.instance
+            .collection('profiles')
+            .doc(_userId) // Menggunakan user ID sebagai dokumen ID
+            .set({
+          'userId': _userId,
+          'nama': _namaController.text,
+          'email': _emailController.text,
+          'noHp': _noHpController.text,
+          'alamat': _alamatController.text,
+          'tentang': _tentangController.text,
+          'ketentuan': _ketentuanController.text,
+          'bannerImageUrl': bannerImageUrl ?? _bannerImageUrl,
+          'profileImageUrl': profileImageUrl ?? _profileImageUrl,
+          'dropPoints': dropPoints
+              .map((dp) => {
+                    'name': dp.nameController.text,
+                    'location': dp.locationController.text,
+                  })
+              .toList(),
+        });
+
+        _isProfileComplete = true;
+
+        // ignore: use_build_context_synchronously
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Form data saved successfully')),
+        );
+      } finally {
+        Navigator.pop(context); // Menutup loading dialog
+      }
     }
   }
 
@@ -158,67 +209,247 @@ class _ProfilePenerimaDonasiState extends State<ProfilePenerimaDonasi> {
     });
   }
 
+  void _showEditBottomSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return Padding(
+          padding: const EdgeInsets.all(24),
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                TextField(
+                  controller: _namaController,
+                  style: const TextStyle(fontSize: 14, color: Colors.black),
+                  decoration: const InputDecoration(
+                      labelText: 'Nama yayasan',
+                      enabledBorder: UnderlineInputBorder(
+                          borderSide: BorderSide(
+                        color: Colors.black,
+                      ))),
+                ),
+                TextField(
+                  controller: _emailController,
+                  style: const TextStyle(fontSize: 14, color: Colors.black),
+                  decoration: const InputDecoration(
+                      labelText: 'Email',
+                      enabledBorder: UnderlineInputBorder(
+                          borderSide: BorderSide(
+                        color: Colors.black,
+                      ))),
+                ),
+                TextField(
+                  controller: _noHpController,
+                  style: const TextStyle(fontSize: 14, color: Colors.black),
+                  decoration: const InputDecoration(
+                      labelText: 'No Hp',
+                      enabledBorder: UnderlineInputBorder(
+                          borderSide: BorderSide(
+                        color: Colors.black,
+                      ))),
+                ),
+                TextField(
+                  controller: _alamatController,
+                  style: const TextStyle(fontSize: 14, color: Colors.black),
+                  decoration: const InputDecoration(
+                      labelText: 'Alamat',
+                      enabledBorder: UnderlineInputBorder(
+                          borderSide: BorderSide(
+                        color: Colors.black,
+                      ))),
+                ),
+                TextField(
+                  controller: _tentangController,
+                  style: const TextStyle(fontSize: 14, color: Colors.black),
+                  decoration: const InputDecoration(
+                      labelText: 'Tentang yayasan',
+                      enabledBorder: UnderlineInputBorder(
+                          borderSide: BorderSide(
+                        color: Colors.black,
+                      ))),
+                ),
+                TextField(
+                  controller: _ketentuanController,
+                  style: const TextStyle(fontSize: 14, color: Colors.black),
+                  decoration: const InputDecoration(
+                      labelText: 'Ketentuan donasi untuk donatur',
+                      enabledBorder: UnderlineInputBorder(
+                          borderSide: BorderSide(
+                        color: Colors.black,
+                      ))),
+                ),
+                const SizedBox(height: 50),
+                InkWell(
+                  onTap: () {
+                    Navigator.pop(context);
+                    setState(() {});
+                  },
+                  child: Container(
+                    alignment: Alignment.center,
+                    width: double.infinity,
+                    height: 40,
+                    decoration: const BoxDecoration(
+                        color: Color(0xFF96B12D),
+                        borderRadius: BorderRadius.all(Radius.circular(20))),
+                    child: const Text(
+                      'Simpan',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                          color: Colors.white),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showEditDropPointBottomSheet(BuildContext context, int index) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return Padding(
+          padding: const EdgeInsets.all(24),
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                TextField(
+                  controller: dropPoints[index].nameController,
+                  style: const TextStyle(fontSize: 14, color: Colors.black),
+                  decoration: const InputDecoration(
+                    labelText: 'Name',
+                    enabledBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(
+                      color: Colors.black,
+                    )),
+                  ),
+                ),
+                TextField(
+                  controller: dropPoints[index].locationController,
+                  style: const TextStyle(fontSize: 14, color: Colors.black),
+                  decoration: const InputDecoration(
+                    labelText: 'Location',
+                    enabledBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(
+                      color: Colors.black,
+                    )),
+                  ),
+                ),
+                const SizedBox(height: 50),
+                InkWell(
+                  onTap: () {
+                    Navigator.pop(context);
+                    setState(() {});
+                  },
+                  child: Container(
+                    alignment: Alignment.center,
+                    width: double.infinity,
+                    height: 40,
+                    decoration: const BoxDecoration(
+                        color: Color(0xFF96B12D),
+                        borderRadius: BorderRadius.all(Radius.circular(20))),
+                    child: const Text(
+                      'Simpan',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                          color: Colors.white),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showEditImageBottomSheet(BuildContext context, bool isBanner) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.photo_library),
+                  title: const Text('Pilih dari Galeri'),
+                  onTap: () {
+                    _pickImage(ImageSource.gallery, isBanner);
+                    Navigator.pop(context);
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.camera_alt),
+                  title: const Text('Ambil Foto'),
+                  onTap: () {
+                    _pickImage(ImageSource.camera, isBanner);
+                    Navigator.pop(context);
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Profil'),
+        surfaceTintColor: Colors.transparent,
+        backgroundColor: Colors.transparent,
+        title: const Text('Profile'),
       ),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(24),
           child: Column(
             children: [
-              Center(
+              GestureDetector(
+                onTap: () => _showEditImageBottomSheet(context, true),
                 child: Stack(
                   clipBehavior: Clip.none,
                   children: [
-                    GestureDetector(
-                      onTap: () => _pickImage(ImageSource.gallery, true),
-                      child: Container(
-                        width: double.infinity,
-                        height: 130,
-                        decoration: BoxDecoration(
-                          color: const Color.fromARGB(255, 201, 199, 199),
-                          borderRadius: BorderRadius.circular(20),
-                          image: _bannerImageUrl != null
-                              ? DecorationImage(
-                                  image: NetworkImage(_bannerImageUrl!),
-                                  fit: BoxFit.cover,
-                                )
-                              : _bannerImage != null
-                                  ? DecorationImage(
-                                      image: FileImage(_bannerImage!),
-                                      fit: BoxFit.cover,
-                                    )
-                                  : null,
-                        ),
-                        child: _bannerImageUrl == null && _bannerImage == null
-                            ? const Center(child: Icon(Icons.camera_alt))
-                            : null,
+                    Container(
+                      height: 130,
+                      decoration: BoxDecoration(
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(15)),
+                        color: Colors.grey,
+                        image: _bannerImageUrl != null
+                            ? DecorationImage(
+                                image: NetworkImage(_bannerImageUrl!),
+                                fit: BoxFit.cover,
+                              )
+                            : _bannerImage != null
+                                ? DecorationImage(
+                                    image: FileImage(_bannerImage!),
+                                    fit: BoxFit.cover,
+                                  )
+                                : null,
                       ),
-                    ),
-                    Positioned(
-                      right: 10,
-                      top: 10,
-                      child: GestureDetector(
-                        onTap: () => _pickImage(ImageSource.gallery, true),
-                        child: Container(
-                          width: 40,
-                          height: 40,
-                          decoration: const BoxDecoration(
-                            color: Colors.white,
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(Icons.camera_alt),
-                        ),
-                      ),
+                      child: _bannerImageUrl == null && _bannerImage == null
+                          ? const Center(child: Icon(Icons.camera_alt))
+                          : null,
                     ),
                     Positioned(
                       bottom: -50,
-                      left: 135,
+                      left: 140,
                       child: GestureDetector(
-                        onTap: () => _pickImage(ImageSource.gallery, false),
+                        onTap: () => _showEditImageBottomSheet(context, false),
                         child: Container(
                           width: 100,
                           height: 100,
@@ -256,48 +487,81 @@ class _ProfilePenerimaDonasiState extends State<ProfilePenerimaDonasi> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     TextFormField(
+                      style: const TextStyle(fontSize: 14, color: Colors.black),
                       controller: _namaController,
-                      decoration:
-                          const InputDecoration(labelText: 'Nama yayasan'),
+                      decoration: const InputDecoration(
+                        labelText: 'Nama yayasan',
+                        enabledBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(
+                          color: Colors.black,
+                        )),
+                      ),
                     ),
                     TextFormField(
                       controller: _emailController,
-                      decoration: const InputDecoration(labelText: 'Email'),
+                      decoration: const InputDecoration(
+                        labelText: 'Email',
+                        enabledBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(
+                          color: Colors.black,
+                        )),
+                      ),
                       keyboardType: TextInputType.emailAddress,
-                    ),
-                    TextFormField(
-                      controller: _passwordController,
-                      decoration: const InputDecoration(labelText: 'Password'),
-                      obscureText: true,
+                      style: const TextStyle(fontSize: 14, color: Colors.black),
                     ),
                     TextFormField(
                       controller: _noHpController,
-                      decoration: const InputDecoration(labelText: 'No Hp'),
+                      decoration: const InputDecoration(
+                        labelText: 'No Hp',
+                        enabledBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(
+                          color: Colors.black,
+                        )),
+                      ),
                       keyboardType: TextInputType.phone,
+                      style: const TextStyle(fontSize: 14, color: Colors.black),
                     ),
                     TextFormField(
                       controller: _alamatController,
+                      style: const TextStyle(fontSize: 14, color: Colors.black),
                       decoration: const InputDecoration(
                         labelText: 'Alamat',
-                        suffixIcon: Icon(Icons.location_pin),
+                        enabledBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(
+                          color: Colors.black,
+                        )),
                       ),
                     ),
                     TextFormField(
                       controller: _tentangController,
-                      decoration:
-                          const InputDecoration(labelText: 'Tentang yayasan'),
+                      style: const TextStyle(fontSize: 14, color: Colors.black),
+                      decoration: const InputDecoration(
+                        labelText: 'Tentang yayasan',
+                        enabledBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(
+                          color: Colors.black,
+                        )),
+                      ),
                       maxLines: 3,
                     ),
                     TextFormField(
                       controller: _ketentuanController,
+                      style: const TextStyle(fontSize: 14, color: Colors.black),
                       decoration: const InputDecoration(
-                          labelText: 'Ketentuan donasi untuk donatur'),
+                        labelText: 'Ketentuan donasi untuk donatur',
+                        enabledBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(
+                          color: Colors.black,
+                        )),
+                      ),
                       maxLines: 3,
                     ),
                     const SizedBox(height: 20),
                     const Text('Drop Points:',
                         style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold)),
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black)),
                     const SizedBox(height: 10),
                     ListView.builder(
                       shrinkWrap: true,
@@ -312,18 +576,35 @@ class _ProfilePenerimaDonasiState extends State<ProfilePenerimaDonasi> {
                               children: [
                                 TextFormField(
                                   controller: dropPoints[index].nameController,
-                                  decoration:
-                                      const InputDecoration(labelText: 'Name'),
+                                  style: const TextStyle(
+                                      fontSize: 14, color: Colors.black),
+                                  decoration: const InputDecoration(
+                                    labelText: 'Name',
+                                    enabledBorder: UnderlineInputBorder(
+                                        borderSide: BorderSide(
+                                      color: Colors.black,
+                                    )),
+                                  ),
                                 ),
                                 TextFormField(
                                   controller:
                                       dropPoints[index].locationController,
+                                  style: const TextStyle(
+                                      fontSize: 14, color: Colors.black),
                                   decoration: const InputDecoration(
+                                      enabledBorder: UnderlineInputBorder(
+                                          borderSide: BorderSide(
+                                        color: Colors.black,
+                                      )),
                                       labelText: 'Location'),
                                 ),
                                 Row(
-                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: [
+                                    IconButton(
+                                        onPressed: addDropPoint,
+                                        icon: const Icon(Icons.add)),
                                     IconButton(
                                       icon: const Icon(Icons.remove),
                                       onPressed: () {
@@ -342,14 +623,9 @@ class _ProfilePenerimaDonasiState extends State<ProfilePenerimaDonasi> {
                     ),
                     const SizedBox(height: 20),
                     ElevatedButton(
-                      onPressed: addDropPoint,
-                      child: const Text('Add Drop Point'),
-                    ),
-                    const SizedBox(height: 20),
-                    ElevatedButton(
                       onPressed: saveForm,
                       style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 15),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(25),
                         ),
@@ -383,4 +659,9 @@ class DropPoint {
       locationController.text = location;
     }
   }
+}
+
+String? getUserId() {
+  final User? user = FirebaseAuth.instance.currentUser;
+  return user?.uid;
 }

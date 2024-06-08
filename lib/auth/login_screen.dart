@@ -28,14 +28,6 @@ class _LoginScreenState extends State<LoginScreen> {
     super.initState();
   }
 
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   Future.delayed(const Duration(seconds: 4), () {
-  //     goToHome(context, 'userType');
-  //   });
-  // }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -167,20 +159,6 @@ class _LoginScreenState extends State<LoginScreen> {
         context,
         MaterialPageRoute(builder: (context) => const RegisterScreen()),
       );
-
-  // goToHome(BuildContext context, String userType) async {
-  //   SharedPreferences preferences = await SharedPreferences.getInstance();
-  //   await preferences.setBool('loginShown', true);
-  //   await preferences.setString('userType', userType);
-
-  //   if (userType == 'Donatur') {
-  //     Navigator.push(context,
-  //         MaterialPageRoute(builder: (context) => const NavigationDonatur()));
-  //   } else {
-  //     Navigator.push(context,
-  //         MaterialPageRoute(builder: (context) => const HomePenerimaDonasi()));
-  //   }
-  // }
 
   _login() async {
     final user =

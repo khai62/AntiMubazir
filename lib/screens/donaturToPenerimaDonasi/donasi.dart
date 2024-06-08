@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:anti/pustaka.dart';
+import 'package:anti/screens/Donatur/navigation_donatur.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
@@ -7,109 +8,61 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:intl/intl.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-class AddScreen extends StatefulWidget {
-  const AddScreen({super.key});
+class Donasi extends StatefulWidget {
+  final String id;
+  const Donasi({super.key, required this.id});
+
+  const Donasi.defaultConstructor({super.key, required this.id});
 
   @override
-  _AddScreenState createState() => _AddScreenState();
+  // ignore: library_private_types_in_public_api
+  _DonasiState createState() => _DonasiState();
 }
 
-class _AddScreenState extends State<AddScreen> {
+class _DonasiState extends State<Donasi> {
+  late Stream<DocumentSnapshot> _stream;
+  late DocumentReference _reference;
+
   final TextEditingController _controllerName = TextEditingController();
-  final TextEditingController _controllerDescription = TextEditingController();
-  final TextEditingController _controllerPrice = TextEditingController();
-  final TextEditingController _controllerDiscount = TextEditingController();
-  final TextEditingController _controllerQuantity = TextEditingController();
+  final TextEditingController _controllerNoHp = TextEditingController();
   final TextEditingController _controllerDate = TextEditingController();
-  final TextEditingController _controllerStartTime = TextEditingController();
-  final TextEditingController _controllerEndTime = TextEditingController();
-
-  TimeOfDay? _selectedStartTime;
-  TimeOfDay? _selectedEndTime;
-
+  final TextEditingController _controllerCaraPengiriman =
+      TextEditingController();
+  final TextEditingController _controllerDroupPoin = TextEditingController();
+  final TextEditingController _controllerKeterangan = TextEditingController();
+  final DateTime _selectedDate = DateTime.now();
   GlobalKey<FormState> key = GlobalKey();
 
-  final CollectionReference _reference =
-      FirebaseFirestore.instance.collection('produk');
+  final CollectionReference _referencee =
+      FirebaseFirestore.instance.collection('donasi');
+
+  @override
+  void initState() {
+    super.initState();
+    _reference =
+        FirebaseFirestore.instance.collection('profiles').doc(widget.id);
+    _stream = _reference.snapshots();
+    _fetchDropPointsOptions(widget.id);
+  }
 
   List<XFile> selectedFiles = [];
   List<String> imageUrls = [];
   bool isLoading = false;
+  List<Map<String, String>> dropPointsOptions = [];
+  String _selectedDropPoint = '';
 
   Future<void> _selectDate(BuildContext context) async {
-    DateTime today = DateTime.now();
     DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: today,
-      firstDate: today,
+      initialDate: DateTime.now(),
+      firstDate: _selectedDate,
       lastDate: DateTime(2101),
     );
-    if (picked != null && picked.isAfter(today)) {
+    if (picked != null && picked != _selectedDate) {
       setState(() {
         _controllerDate.text = DateFormat('yyyy-MM-dd').format(picked);
       });
     }
-  }
-
-  
-
-  Future<void> _selectStartTime(BuildContext context) async {
-    final TimeOfDay? pickedTime = await showTimePicker(
-      context: context,
-      initialTime: _selectedStartTime ?? TimeOfDay.now(),
-    );
-    if (pickedTime != null) {
-      setState(() {
-        _selectedStartTime = pickedTime;
-        _controllerStartTime.text = _selectedStartTime!.format(context);
-        // Reset _selectedEndTime to ensure end time is always after start time
-        if (_selectedEndTime != null &&
-            _compareTimeOfDay(_selectedEndTime!, _selectedStartTime!)) {
-          _selectedEndTime = _selectedStartTime;
-          _controllerEndTime.text = _selectedEndTime!.format(context);
-        }
-      });
-    }
-  }
-
-  Future<void> _selectEndTime(BuildContext context) async {
-    final TimeOfDay? pickedTime = await showTimePicker(
-      context: context,
-      initialTime: _selectedEndTime ?? TimeOfDay.now(),
-    );
-    if (pickedTime != null) {
-      if (_selectedStartTime != null &&
-          _compareTimeOfDay(pickedTime, _selectedStartTime!)) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('End time cannot be before start time'),
-        ));
-      } else {
-        setState(() {
-          _selectedEndTime = pickedTime;
-          _controllerEndTime.text = _selectedEndTime!.format(context);
-        });
-      }
-    }
-  }
-
-  bool _compareTimeOfDay(TimeOfDay time1, TimeOfDay time2) {
-    if (time1.hour < time2.hour) {
-      return true;
-    } else if (time1.hour == time2.hour && time1.minute < time2.minute) {
-      return true;
-    }
-    return false;
-  }
-
-  String formatCurrency(String value) {
-    final number = double.tryParse(value.replaceAll('.', ''));
-    if (number == null) return value;
-    final formatCurrency = NumberFormat.currency(
-      locale: 'id',
-      symbol: '',
-      decimalDigits: 0,
-    );
-    return formatCurrency.format(number);
   }
 
   void showLoadingDialog(BuildContext context) {
@@ -138,16 +91,101 @@ class _AddScreenState extends State<AddScreen> {
     Navigator.pop(context);
   }
 
+  Future<void> _pickImage(ImageSource source, bool isBanner) async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? file = await picker.pickImage(source: source);
+    if (file != null) {
+      setState(() {
+        selectedFiles.add(file);
+      });
+    }
+  }
+
+  void _showEditImageBottomSheet(BuildContext context, bool isBanner) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.photo_library),
+                  title: const Text('Pilih dari Galeri'),
+                  onTap: () async {
+                    await _pickImage(ImageSource.gallery, isBanner);
+                    Navigator.pop(context);
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.camera_alt),
+                  title: const Text('Ambil Foto'),
+                  onTap: () async {
+                    await _pickImage(ImageSource.camera, isBanner);
+                    Navigator.pop(context);
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _fetchDropPointsOptions(String userId) async {
+    final profileSnapshot = await FirebaseFirestore.instance
+        .collection('profiles')
+        .doc(userId)
+        .get();
+    final dropPoints = profileSnapshot.get('dropPoints');
+
+    List<Map<String, String>> dropPointsNames = [];
+
+    for (var point in dropPoints) {
+      String name = point['name'];
+      String location = point['location'];
+      dropPointsNames.add({'name': name, 'location': location});
+    }
+
+    setState(() {
+      dropPointsOptions = dropPointsNames;
+      if (dropPointsOptions.isNotEmpty) {
+        _selectedDropPoint = dropPointsOptions.first['name']!;
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Jual',
-          style: TextStyle(
-              fontSize: 20, color: Colors.black, fontWeight: FontWeight.bold),
-        ),
-      ),
+          surfaceTintColor: Colors.transparent,
+          backgroundColor: Colors.transparent,
+          title: StreamBuilder<DocumentSnapshot>(
+            stream: _stream,
+            builder: (BuildContext context, AsyncSnapshot snapshot) {
+              if (snapshot.hasData) {
+                DocumentSnapshot documentSnapshot = snapshot.data;
+                if (documentSnapshot.exists) {
+                  Map<String, dynamic> data =
+                      documentSnapshot.data() as Map<String, dynamic>;
+                  return Text(
+                    'Donasi ke ${data['nama']}',
+                    overflow: TextOverflow.clip,
+                    softWrap: true,
+                  );
+                }
+              }
+              return const Text(
+                'Donase ke',
+                overflow: TextOverflow.clip,
+                softWrap: true,
+              );
+            },
+          )),
       body: SingleChildScrollView(
         child: Container(
           padding:
@@ -159,15 +197,12 @@ class _AddScreenState extends State<AddScreen> {
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(
-                  height: 20,
-                ),
+                const SizedBox(height: 20),
                 // untuk menampilkan gambar
                 SizedBox(
                   width: double.infinity,
                   child: SingleChildScrollView(
-                    scrollDirection:
-                        Axis.horizontal, // Mengatur scroll menjadi horizontal
+                    scrollDirection: Axis.horizontal,
                     child: Row(
                       children: <Widget>[
                         for (int index = 0;
@@ -211,16 +246,8 @@ class _AddScreenState extends State<AddScreen> {
                             ),
                           ),
                           child: IconButton(
-                            onPressed: () async {
-                              ImagePicker imagePicker = ImagePicker();
-                              List<XFile>? files =
-                                  await imagePicker.pickMultiImage();
-
-                              if (files.isEmpty) return;
-
-                              setState(() {
-                                selectedFiles.addAll(files);
-                              });
+                            onPressed: () {
+                              _showEditImageBottomSheet(context, false);
                             },
                             icon: const Icon(Icons.add),
                           ),
@@ -229,111 +256,36 @@ class _AddScreenState extends State<AddScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(
-                  height: 20,
-                ),
-
+                const SizedBox(height: 20),
                 TextFormField(
                   controller: _controllerName,
                   style: const TextStyle(fontSize: 14, color: Colors.black),
                   decoration: const InputDecoration(
-                      hintText: 'Nama ',
+                      hintText: 'Nama donatur',
                       enabledBorder: UnderlineInputBorder(
                           borderSide: BorderSide(
                         color: Colors.black,
                       ))),
                   validator: (String? value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter the product name';
+                      return 'Masukan Nama';
                     }
                     return null;
                   },
                 ),
                 const SizedBox(height: 15),
                 TextFormField(
-                  controller: _controllerDescription,
+                  controller: _controllerNoHp,
                   style: const TextStyle(fontSize: 14, color: Colors.black),
                   decoration: const InputDecoration(
-                      hintText: 'Deskripsi',
+                      hintText: 'No Hp',
                       enabledBorder: UnderlineInputBorder(
                           borderSide: BorderSide(
                         color: Colors.black,
                       ))),
                   validator: (String? value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter the product description';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 15),
-                TextFormField(
-                  controller: _controllerPrice,
-                  style: const TextStyle(fontSize: 14, color: Colors.black),
-                  keyboardType:
-                      const TextInputType.numberWithOptions(decimal: true),
-                  decoration: const InputDecoration(
-                      hintText: 'Harga',
-                      enabledBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(
-                        color: Colors.black,
-                      ))),
-                  onChanged: (value) {
-                    setState(() {
-                      _controllerPrice.text = formatCurrency(value);
-                      _controllerPrice.selection = TextSelection.fromPosition(
-                        TextPosition(offset: _controllerPrice.text.length),
-                      );
-                    });
-                  },
-                  validator: (String? value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter the product price';
-                    }
-                    if (double.tryParse(value.replaceAll('.', '')) == null) {
-                      return 'Please enter a valid number';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 15),
-                TextFormField(
-                  controller: _controllerDiscount,
-                  style: const TextStyle(fontSize: 14, color: Colors.black),
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                      hintText: 'Diskon',
-                      enabledBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(
-                        color: Colors.black,
-                      ))),
-                  validator: (String? value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter the discount percentage';
-                    }
-                    if (double.tryParse(value) == null) {
-                      return 'Please enter a valid number';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 15),
-                TextFormField(
-                  controller: _controllerQuantity,
-                  style: const TextStyle(fontSize: 14, color: Colors.black),
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                      hintText: 'Jumlah',
-                      enabledBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(
-                        color: Colors.black,
-                      ))),
-                  validator: (String? value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter the quantity available';
-                    }
-                    if (int.tryParse(value) == null) {
-                      return 'Please enter a valid number';
+                      return 'Masukkan No Hp';
                     }
                     return null;
                   },
@@ -343,7 +295,7 @@ class _AddScreenState extends State<AddScreen> {
                   controller: _controllerDate,
                   style: const TextStyle(fontSize: 14, color: Colors.black),
                   decoration: const InputDecoration(
-                      hintText: 'Tanggal berakhir',
+                      hintText: 'Rencana tanggal donasi',
                       enabledBorder: UnderlineInputBorder(
                           borderSide: BorderSide(
                         color: Colors.black,
@@ -352,65 +304,78 @@ class _AddScreenState extends State<AddScreen> {
                   readOnly: true,
                   validator: (String? value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter the date available';
+                      return 'Masukkan rencana tgl donasi';
                     }
                     return null;
                   },
                 ),
                 const SizedBox(height: 15),
                 TextFormField(
-                  controller: _controllerStartTime,
+                  controller: _controllerCaraPengiriman,
                   style: const TextStyle(fontSize: 14, color: Colors.black),
-                  decoration: InputDecoration(
-                    hintText: 'Jam mulai',
-                    enabledBorder: const UnderlineInputBorder(
-                        borderSide: BorderSide(
-                      color: Colors.black,
-                    )),
-                    suffixIcon: IconButton(
-                      onPressed: () => _selectStartTime(context),
-                      icon: const Icon(Icons.access_time),
-                    ),
-                  ),
-                  readOnly: true,
+                  decoration: const InputDecoration(
+                      hintText: 'Cara Pengiriman',
+                      enabledBorder: UnderlineInputBorder(
+                          borderSide: BorderSide(
+                        color: Colors.black,
+                      ))),
                   validator: (String? value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter the start time';
+                      return 'Masukkan cara pengiriman';
                     }
                     return null;
                   },
                 ),
+                const SizedBox(height: 15),
+                DropdownButtonFormField<String>(
+                  value: _selectedDropPoint,
+                  items: dropPointsOptions.map((Map<String, String> option) {
+                    return DropdownMenuItem<String>(
+                      value: option['name'],
+                      child: Text('${option['name']} : ${option['location']}'),
+                    );
+                  }).toList(),
+                  onChanged: (String? value) {
+                    setState(() {
+                      _selectedDropPoint = value ?? '';
+                    });
+                  },
+                  decoration: const InputDecoration(
+                    hintText: 'Drop Point',
+                    enabledBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(
+                        color: Colors.black,
+                      ),
+                    ),
+                  ),
+                ),
+
                 const SizedBox(
-                  height: 15,
+                  height: 20,
                 ),
                 TextFormField(
-                  controller: _controllerEndTime,
+                  controller: _controllerKeterangan,
                   style: const TextStyle(fontSize: 14, color: Colors.black),
-                  decoration: InputDecoration(
-                    hintText: 'Jam berakhir',
-                    enabledBorder: const UnderlineInputBorder(
-                        borderSide: BorderSide(
-                      color: Colors.black,
-                    )),
-                    suffixIcon: IconButton(
-                      onPressed: () => _selectEndTime(context),
-                      icon: const Icon(Icons.access_time),
-                    ),
-                  ),
-                  readOnly: true,
+                  decoration: const InputDecoration(
+                      hintText: 'Keterangan',
+                      enabledBorder: UnderlineInputBorder(
+                          borderSide: BorderSide(
+                        color: Colors.black,
+                      ))),
                   validator: (String? value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter the end time';
+                      return 'Masukan keterangan';
                     }
                     return null;
                   },
                 ),
+                const SizedBox(height: 15),
                 const SizedBox(height: 40),
                 InkWell(
                   onTap: () async {
                     if (selectedFiles.isEmpty) {
                       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                          content: Text('Please upload at least one image')));
+                          content: Text('Silahkan masukkan gambar')));
                       return;
                     }
 
@@ -421,19 +386,18 @@ class _AddScreenState extends State<AddScreen> {
                       showLoadingDialog(context);
 
                       String itemName = _controllerName.text;
-                      String itemDescription = _controllerDescription.text;
-                      String itemPrice = _controllerPrice.text;
-                      String itemDiscount = _controllerDiscount.text;
-                      String itemQuantity = _controllerQuantity.text;
+                      String itemNoHp = _controllerNoHp.text;
                       String itemDate = _controllerDate.text;
-                      String itemStartTime = _controllerStartTime.text;
-                      String itemEndTime = _controllerEndTime.text;
+                      String itemCaraPengiriman =
+                          _controllerCaraPengiriman.text;
+                      String itemDroupPoin = _controllerDroupPoin.text;
+                      String itemKeterangan = _controllerKeterangan.text;
                       String userId = FirebaseAuth.instance.currentUser!.uid;
 
                       // Unggah gambar ke Firebase Storage
                       List<String> newImageUrls = [];
                       for (XFile file in selectedFiles) {
-                        String documentId = _reference.doc().id;
+                        String documentId = _referencee.doc().id;
                         Reference referenceRoot =
                             FirebaseStorage.instance.ref();
                         Reference referenceDirImages =
@@ -459,22 +423,21 @@ class _AddScreenState extends State<AddScreen> {
                       Map<String, dynamic> dataToSend = {
                         'userId': userId,
                         'name': itemName,
-                        'description': itemDescription,
-                        'price': itemPrice,
-                        'discount': itemDiscount,
-                        'quantity': itemQuantity,
+                        'noHp': itemNoHp,
                         'date': itemDate,
-                        'startTime': itemStartTime,
-                        'endTime': itemEndTime,
+                        'carapengiriman': itemCaraPengiriman,
+                        'dropPoints': itemDroupPoin,
+                        'keterangan': itemKeterangan,
                         'images': imageUrls,
                       };
 
-                      await _reference.add(dataToSend);
+                      await _referencee.add(dataToSend);
                       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                           content: Text('Item added successfully')));
 
                       hideLoadingDialog(context);
 
+                      // Ganti NavigationDonatur dengan halaman yang relevan
                       Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -482,13 +445,11 @@ class _AddScreenState extends State<AddScreen> {
 
                       setState(() {
                         _controllerName.clear();
-                        _controllerDescription.clear();
-                        _controllerPrice.clear();
-                        _controllerDiscount.clear();
-                        _controllerQuantity.clear();
+                        _controllerNoHp.clear();
+                        _controllerKeterangan.clear();
+                        _controllerCaraPengiriman.clear();
+                        _controllerDroupPoin.clear();
                         _controllerDate.clear();
-                        _controllerStartTime.clear();
-                        _controllerEndTime.clear();
                         selectedFiles.clear();
                         imageUrls.clear();
                         isLoading = false;
@@ -504,7 +465,7 @@ class _AddScreenState extends State<AddScreen> {
                       borderRadius: BorderRadius.all(Radius.circular(25)),
                     ),
                     child: const Text(
-                      'Upload',
+                      'Donasikan',
                       style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 18,

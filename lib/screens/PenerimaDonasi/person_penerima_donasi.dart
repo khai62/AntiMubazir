@@ -107,7 +107,7 @@ class _PersonPenerimaDonasiState extends State<PersonPenerimaDonasi>
                 onTap: () => Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => const ProfilePenerimaDonasi())),
+                        builder: (context) => ProfilePenerimaDonasi())),
                 child: Container(
                     alignment: Alignment.center,
                     width: double.infinity,
@@ -130,7 +130,7 @@ class _PersonPenerimaDonasiState extends State<PersonPenerimaDonasi>
                 controller: _tabController,
                 tabs: const <Widget>[
                   Tab(
-                      child: Text('Jualan Saya',
+                      child: Text('Postingan saya',
                           style: TextStyle(
                               fontWeight: FontWeight.w400,
                               color: Colors.black,
@@ -156,14 +156,6 @@ class _PersonPenerimaDonasiState extends State<PersonPenerimaDonasi>
             ],
           ),
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.of(context)
-              .push(MaterialPageRoute(builder: (context) => const AddScreen()));
-        },
-        tooltip: 'Add Item',
-        child: const Icon(Icons.add),
       ),
     );
   }

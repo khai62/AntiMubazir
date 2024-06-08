@@ -106,7 +106,7 @@ class _PersonState extends State<Person> with TickerProviderStateMixin {
                 controller: _tabController,
                 tabs: const <Widget>[
                   Tab(
-                      child: Text('Jualan Saya',
+                      child: Text('Donasi saya',
                           style: TextStyle(
                               fontWeight: FontWeight.w400,
                               color: Colors.black,
@@ -120,7 +120,7 @@ class _PersonState extends State<Person> with TickerProviderStateMixin {
                 ],
               ),
               SizedBox(
-                height: 400, // Set height untuk TabBarView
+                height: 400,
                 child: TabBarView(
                   controller: _tabController,
                   children: const <Widget>[
@@ -132,14 +132,6 @@ class _PersonState extends State<Person> with TickerProviderStateMixin {
             ],
           ),
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.of(context)
-              .push(MaterialPageRoute(builder: (context) => const AddScreen()));
-        },
-        tooltip: 'Add Item',
-        child: const Icon(Icons.add),
       ),
     );
   }
