@@ -86,17 +86,17 @@ class _DonasiState extends State<Donasi> {
     Navigator.pop(context);
   }
 
-  Future<void> _pickImage(ImageSource source, bool isBanner) async {
+  Future<void> _pickImages(ImageSource source) async {
     final ImagePicker picker = ImagePicker();
-    final XFile? file = await picker.pickImage(source: source);
-    if (file != null) {
+    final List<XFile>? files = await picker.pickMultiImage();
+    if (files != null) {
       setState(() {
-        selectedFiles.add(file);
+        selectedFiles.addAll(files);
       });
     }
   }
 
-  void _showEditImageBottomSheet(BuildContext context, bool isBanner) {
+  void _showEditImageBottomSheet(BuildContext context) {
     showModalBottomSheet(
       context: context,
       builder: (context) {
@@ -110,7 +110,7 @@ class _DonasiState extends State<Donasi> {
                   leading: const Icon(Icons.photo_library),
                   title: const Text('Pilih dari Galeri'),
                   onTap: () async {
-                    await _pickImage(ImageSource.gallery, isBanner);
+                    await _pickImages(ImageSource.gallery);
                     Navigator.pop(context);
                   },
                 ),
@@ -118,7 +118,14 @@ class _DonasiState extends State<Donasi> {
                   leading: const Icon(Icons.camera_alt),
                   title: const Text('Ambil Foto'),
                   onTap: () async {
-                    await _pickImage(ImageSource.camera, isBanner);
+                    final ImagePicker picker = ImagePicker();
+                    final XFile? file =
+                        await picker.pickImage(source: ImageSource.camera);
+                    if (file != null) {
+                      setState(() {
+                        selectedFiles.add(file);
+                      });
+                    }
                     Navigator.pop(context);
                   },
                 ),
@@ -286,7 +293,7 @@ class _DonasiState extends State<Donasi> {
                           ),
                           child: IconButton(
                             onPressed: () {
-                              _showEditImageBottomSheet(context, false);
+                              _showEditImageBottomSheet(context);
                             },
                             icon: const Icon(Icons.add),
                           ),
