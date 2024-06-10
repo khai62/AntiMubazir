@@ -55,7 +55,7 @@ class _MyAppState extends State<MyApp> {
       future: _initScreens,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const CircularProgressIndicator();
+          return Container(color: Colors.white);
         } else if (snapshot.hasError) {
           return MaterialApp(
             home: Scaffold(

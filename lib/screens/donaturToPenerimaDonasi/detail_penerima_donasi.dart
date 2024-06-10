@@ -186,7 +186,8 @@ class _DetailPenerimaDonasiState extends State<DetailPenerimaDonasi>
                             Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                    builder: (context) => KetentuanDonasi(id: data['userId'])));
+                                    builder: (context) =>
+                                        KetentuanDonasi(id: data['userId'])));
                           },
                           child: Container(
                             alignment: Alignment.center,
@@ -229,7 +230,7 @@ class _DetailPenerimaDonasiState extends State<DetailPenerimaDonasi>
                           child: TabBarView(
                             controller: _tabController,
                             children: <Widget>[
-                              const PostinganPenerimaDonasi(),
+                              const PostinganSaya(),
                               TentangPenerimaDonasi(
                                 id: data['userId'],
                               ),

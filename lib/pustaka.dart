@@ -9,12 +9,13 @@ export 'common/splash_screen.dart';
 export 'auth/login_screen.dart';
 export 'auth/register_screen.dart';
 export 'auth/auth_service.dart';
-export 'screens/Donatur/person_tabbar_content/jualansaya.dart';
+export 'screens/Donatur/person_tabbar_content/donasi_saya.dart';
 export 'screens/Donatur/person_tabbar_content/tersimpan.dart';
+export 'screens/Donatur/person_tabbar_content/detail_donasi_saya.dart';
 export 'main.dart';
 
 export 'screens/donaturToPenerimaDonasi/detail_penerima_donasi.dart';
-export 'screens/donaturToPenerimaDonasi/tab/postinan.dart';
+export 'screens/donaturToPenerimaDonasi/tab/postingan.dart';
 export 'screens/donaturToPenerimaDonasi/tab/tentang.dart';
 export 'screens/donaturToPenerimaDonasi/ketentuan_donasi.dart';
 export 'screens/donaturToPenerimaDonasi/donasi.dart';

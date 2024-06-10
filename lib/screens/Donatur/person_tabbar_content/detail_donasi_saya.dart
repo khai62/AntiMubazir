@@ -2,16 +2,16 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 
-class DetailDonasiMasuk extends StatefulWidget {
+class DetailDonasiSaya extends StatefulWidget {
   final String donationId;
 
-  const DetailDonasiMasuk({super.key, required this.donationId});
+  const DetailDonasiSaya({super.key, required this.donationId});
 
   @override
-  State<DetailDonasiMasuk> createState() => _DetailDonasiMasukState();
+  State<DetailDonasiSaya> createState() => _DetailDonasiSayaState();
 }
 
-class _DetailDonasiMasukState extends State<DetailDonasiMasuk> {
+class _DetailDonasiSayaState extends State<DetailDonasiSaya> {
   final CollectionReference _reference =
       FirebaseFirestore.instance.collection('donasi');
 
@@ -111,8 +111,8 @@ class _DetailDonasiMasukState extends State<DetailDonasiMasuk> {
               if (documentSnapshot.exists) {
                 Map<String, dynamic> data =
                     documentSnapshot.data() as Map<String, dynamic>;
-                return Text(
-                  'Detail donasi dari ${data['name']}',
+                return const Text(
+                  'Detail donasi saya',
                   overflow: TextOverflow.clip,
                   softWrap: true,
                 );
@@ -278,62 +278,25 @@ class _DetailDonasiMasukState extends State<DetailDonasiMasuk> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 40),
-                    if (data['status'] != 'Diterima' &&
-                        data['status'] != 'Ditolak')
-                      Column(
-                        children: [
-                          InkWell(
-                            onTap: _confirmDonation,
-                            child: Container(
-                              alignment: Alignment.center,
-                              width: double.infinity,
-                              height: 40,
-                              decoration: const BoxDecoration(
-                                color: Color(0xFF96B12D),
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(25)),
-                              ),
-                              child: const Text(
-                                'konfirmasi',
+                    const SizedBox(height: 18),
+                    if (data['status'] == 'Ditolak' &&
+                        data['rejectionReason'] != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('Alasan Penolakan',
                                 style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 18,
-                                    color: Colors.white),
-                              ),
+                                    fontSize: 18, fontWeight: FontWeight.bold)),
+                            Text(
+                              data['rejectionReason'],
+                              style: const TextStyle(fontSize: 18),
+                              overflow: TextOverflow.visible,
+                              softWrap: true,
                             ),
-                          ),
-                          const SizedBox(height: 40),
-                          TextField(
-                            controller: _rejectionReasonController,
-                            decoration: const InputDecoration(
-                              labelText: 'Alasan Penolakan',
-                              border: OutlineInputBorder(),
-                            ),
-                            maxLines: 3,
-                          ),
-                          const SizedBox(height: 20),
-                          InkWell(
-                            onTap: _rejectDonation,
-                            child: Container(
-                              alignment: Alignment.center,
-                              width: double.infinity,
-                              height: 40,
-                              decoration: const BoxDecoration(
-                                color: Colors.red,
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(25)),
-                              ),
-                              child: const Text(
-                                'Tolak',
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 18,
-                                    color: Colors.white),
-                              ),
-                            ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     const SizedBox(height: 20)
                   ],

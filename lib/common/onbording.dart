@@ -47,14 +47,17 @@ class _OnbordingState extends State<Onbording> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Image.asset(contents[i].images, width: 100, height: 100),
+                  Image.asset(contents[i].images, width: 90, height: 90),
                   Center(
                     child:
-                        Image.asset(contents[i].image, width: 250, height: 250),
+                        Image.asset(contents[i].image, width: 240, height: 240),
                   ),
                   Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Text(
+                        textAlign: TextAlign.center,
                         contents[i].title,
                         style: const TextStyle(
                             fontSize: 24,
@@ -67,10 +70,12 @@ class _OnbordingState extends State<Onbording> {
                       Text(
                         textAlign: TextAlign.center,
                         contents[i].discription,
+                        overflow: TextOverflow.visible,
+                        softWrap: true,
                         style:
                             const TextStyle(fontSize: 14, color: Colors.black),
                       ),
-                      const SizedBox(height: 40),
+                      const SizedBox(height: 20),
                     ],
                   )
                 ],
@@ -126,8 +131,7 @@ class _OnbordingState extends State<Onbording> {
                 onPressed: () async {
                   switch (currentIndex) {
                     case 0:
-                      await PermissionServices
-                          .requestNotificationPermission();
+                      await PermissionServices.requestNotificationPermission();
                       break;
                     case 1:
                       await PermissionServices.requestLocationPermission();

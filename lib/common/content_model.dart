@@ -16,13 +16,14 @@ List<UnbordingContent> contents = [
       images: 'assets/images/logos.png',
       title: 'Izinkan Pemberitahuan',
       image: 'assets/images/notif.png',
-      discription: "Ini Penting untuk memperoleh pesan mengenai order"),
+      discription:
+          "Ini Penting untuk memperoleh pesan mengenai pemberitahuan dan info seputar donasi"),
   UnbordingContent(
       images: 'assets/images/logos.png',
       title: 'Izinkan akses ke geolokasi',
       image: 'assets/images/lokasi.png',
       discription:
-          "Pencarian alamat akan menjadi lebih tepat. Ini akan membantu menghemat wktu dan mempercepet pemenuhan order"),
+          "Pencarian alamat akan menjadi lebih tepat. Ini akan membantu mengatahui jarak lokasi anda dengan pendonasi atau sebaliknya"),
   UnbordingContent(
       images: 'assets/images/logos.png',
       title: 'Izinkan akses ke telepon',

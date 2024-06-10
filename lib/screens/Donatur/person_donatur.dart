@@ -42,6 +42,8 @@ class _PersonState extends State<Person> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    User? currentUser = FirebaseAuth.instance.currentUser;
+    final String? currentUserId = currentUser?.uid;
     return Scaffold(
       body: SingleChildScrollView(
         child: Padding(
@@ -120,12 +122,15 @@ class _PersonState extends State<Person> with TickerProviderStateMixin {
                 ],
               ),
               SizedBox(
-                height: 400,
+                height: 530,
                 child: TabBarView(
                   controller: _tabController,
-                  children: const <Widget>[
-                    JualanSaya(),
-                    Tersimpan(),
+                  children: <Widget>[
+                    if (currentUserId != null)
+                      DonasiSaya(
+                        userId: currentUserId,
+                      ),
+                    const Tersimpan(),
                   ],
                 ),
               ),

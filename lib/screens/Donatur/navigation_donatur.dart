@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:anti/pustaka.dart';
 
@@ -19,14 +20,16 @@ class _NavigationDonaturState extends State<NavigationDonatur> {
 
   @override
   Widget build(BuildContext context) {
+    User? currentUser = FirebaseAuth.instance.currentUser;
+    final String? currentUserId = currentUser?.uid;
     return Scaffold(
       body: IndexedStack(
         index: _selectedIndex,
-        children: const <Widget>[
-          HomeDonatur(),
-          PenerimaDonasi(),
-          NotifikasiDonatur(),
-          Person('Akun Saya'),
+        children: <Widget>[
+          const HomeDonatur(),
+          const PenerimaDonasi(),
+          if (currentUserId != null) NotifikasiDonatur(userId: currentUserId),
+          const Person('Akun Saya'),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
@@ -43,15 +46,15 @@ class _NavigationDonaturState extends State<NavigationDonatur> {
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.all_inclusive),
-            label: 'Troli',
+            label: 'Penerima Donasi',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.notifications),
-            label: 'Message',
+            label: 'Notifikasi',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person),
-            label: 'User',
+            label: 'Profile',
           ),
         ],
         currentIndex: _selectedIndex,

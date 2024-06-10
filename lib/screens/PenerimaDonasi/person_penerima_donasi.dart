@@ -148,7 +148,9 @@ class _PersonPenerimaDonasiState extends State<PersonPenerimaDonasi>
                 child: TabBarView(
                   controller: _tabController,
                   children: const <Widget>[
-                    JualanSaya(),
+                    DonasiSaya(
+                      userId: '',
+                    ),
                     Tersimpan(),
                   ],
                 ),

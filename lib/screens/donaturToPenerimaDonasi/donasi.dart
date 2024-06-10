@@ -12,7 +12,6 @@ class Donasi extends StatefulWidget {
   const Donasi({super.key, required this.id});
 
   @override
-  // ignore: library_private_types_in_public_api
   _DonasiState createState() => _DonasiState();
 }
 
@@ -25,7 +24,6 @@ class _DonasiState extends State<Donasi> {
   final TextEditingController _controllerDate = TextEditingController();
   final TextEditingController _controllerCaraPengiriman =
       TextEditingController();
-  final TextEditingController _controllerDroupPoin = TextEditingController();
   final TextEditingController _controllerKeterangan = TextEditingController();
   final DateTime _selectedDate = DateTime.now();
   GlobalKey<FormState> key = GlobalKey();
@@ -155,34 +153,78 @@ class _DonasiState extends State<Donasi> {
     });
   }
 
+  // Fungsi untuk membuat notifikasi
+  Future<void> createNotification(
+      String userId, String message, String donationId) async {
+    Map<String, dynamic> notificationData = {
+      'userId': userId,
+      'message': message,
+      'timestamp': FieldValue.serverTimestamp(),
+      'read': false,
+      'donationId': donationId,
+    };
+
+    await FirebaseFirestore.instance
+        .collection('notifications')
+        .add(notificationData);
+  }
+
+  // Fungsi untuk mendengarkan perubahan status donasi
+  void listenToDonationStatusChanges(String donationId) {
+    FirebaseFirestore.instance
+        .collection('donasi')
+        .doc(donationId)
+        .snapshots()
+        .listen((documentSnapshot) {
+      if (documentSnapshot.exists) {
+        String status = documentSnapshot['status'];
+        String donaturId = documentSnapshot['donaturId'];
+        String message;
+
+        if (status == 'Diterima') {
+          message = 'Donasi Anda diterima';
+        } else if (status == 'Menunggu') {
+          message = 'Donasi Anda masih menunggu konfirmasi';
+        } else if (status == 'Ditolak') {
+          message = 'Donasi Anda ditolak';
+        } else {
+          message = 'Status donasi tidak dikenal';
+        }
+
+        createNotification(donaturId, message, donationId);
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-          surfaceTintColor: Colors.transparent,
-          backgroundColor: Colors.transparent,
-          title: StreamBuilder<DocumentSnapshot>(
-            stream: _stream,
-            builder: (BuildContext context, AsyncSnapshot snapshot) {
-              if (snapshot.hasData) {
-                DocumentSnapshot documentSnapshot = snapshot.data;
-                if (documentSnapshot.exists) {
-                  Map<String, dynamic> data =
-                      documentSnapshot.data() as Map<String, dynamic>;
-                  return Text(
-                    'Donasi ke ${data['nama']}',
-                    overflow: TextOverflow.clip,
-                    softWrap: true,
-                  );
-                }
+        surfaceTintColor: Colors.transparent,
+        backgroundColor: Colors.transparent,
+        title: StreamBuilder<DocumentSnapshot>(
+          stream: _stream,
+          builder: (BuildContext context, AsyncSnapshot snapshot) {
+            if (snapshot.hasData) {
+              DocumentSnapshot documentSnapshot = snapshot.data;
+              if (documentSnapshot.exists) {
+                Map<String, dynamic> data =
+                    documentSnapshot.data() as Map<String, dynamic>;
+                return Text(
+                  'Donasi ke ${data['nama']}',
+                  overflow: TextOverflow.clip,
+                  softWrap: true,
+                );
               }
-              return const Text(
-                'Donasi ke',
-                overflow: TextOverflow.clip,
-                softWrap: true,
-              );
-            },
-          )),
+            }
+            return const Text(
+              'Donasi ke',
+              overflow: TextOverflow.clip,
+              softWrap: true,
+            );
+          },
+        ),
+      ),
       body: SingleChildScrollView(
         child: Container(
           padding:
@@ -325,10 +367,7 @@ class _DonasiState extends State<Donasi> {
                 ),
                 const SizedBox(height: 15),
                 DropdownButtonFormField<String>(
-                  value:
-                      _selectedDropPoint.isEmpty && dropPointsOptions.isNotEmpty
-                          ? dropPointsOptions.first['name']
-                          : _selectedDropPoint,
+                  value: _selectedDropPoint,
                   items: dropPointsOptions.map((Map<String, String> option) {
                     return DropdownMenuItem<String>(
                       value: option['name'],
@@ -348,6 +387,12 @@ class _DonasiState extends State<Donasi> {
                       ),
                     ),
                   ),
+                  validator: (String? value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Masukkan Drop Point';
+                    }
+                    return null;
+                  },
                 ),
                 const SizedBox(height: 20),
                 TextFormField(
@@ -386,7 +431,7 @@ class _DonasiState extends State<Donasi> {
                       String itemDate = _controllerDate.text;
                       String itemCaraPengiriman =
                           _controllerCaraPengiriman.text;
-                      String itemDroupPoin = _controllerDroupPoin.text;
+                      String itemDroupPoin = _selectedDropPoint;
                       String itemKeterangan = _controllerKeterangan.text;
                       String userId = FirebaseAuth.instance.currentUser!.uid;
 
@@ -427,9 +472,13 @@ class _DonasiState extends State<Donasi> {
                         'keterangan': itemKeterangan,
                         'images': imageUrls,
                         'timestamp': FieldValue.serverTimestamp(),
+                        'status': 'Menunggu',
                       };
 
-                      await _referencee.add(dataToSend);
+                      DocumentReference donationDoc =
+                          await _referencee.add(dataToSend);
+
+                      listenToDonationStatusChanges(donationDoc.id);
 
                       // Tambahkan notifikasi
                       Map<String, dynamic> notificationData = {
@@ -438,28 +487,45 @@ class _DonasiState extends State<Donasi> {
                         'name': itemName,
                         'message': 'Anda menerima donasi baru.',
                         'timestamp': FieldValue.serverTimestamp(),
+                        'donationId': donationDoc.id,
                       };
 
                       await FirebaseFirestore.instance
                           .collection('notifications')
                           .add(notificationData);
 
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                          content: Text('Item added successfully')));
-
                       hideLoadingDialog(context);
+                      await showModalBottomSheet(
+                        context: context,
+                        backgroundColor:
+                            const Color.fromARGB(255, 223, 247, 202),
+                        builder: (context) => Container(
+                          height: 60,
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(10),
+                          child: const Center(
+                            child: Text(
+                              'Donasi berhasil di kirim, tunggu konfirmasi',
+                              style: TextStyle(
+                                fontSize: 15,
+                                color: Colors.black,
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
 
                       Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const NavigationDonatur()));
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const NavigationDonatur()),
+                      );
 
                       setState(() {
                         _controllerName.clear();
                         _controllerNoHp.clear();
                         _controllerKeterangan.clear();
                         _controllerCaraPengiriman.clear();
-                        _controllerDroupPoin.clear();
                         _controllerDate.clear();
                         selectedFiles.clear();
                         imageUrls.clear();

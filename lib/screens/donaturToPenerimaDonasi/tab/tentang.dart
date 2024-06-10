@@ -114,7 +114,7 @@ class _TentangPenerimaDonasiState extends State<TentangPenerimaDonasi>
         const SizedBox(width: 15),
         Expanded(
           child: Text(
-            text ?? '-',
+            text,
             style: const TextStyle(fontSize: 18, color: Colors.black),
             overflow: TextOverflow.visible,
             softWrap: true,

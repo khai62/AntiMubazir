@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:anti/pustaka.dart';
 
 class NotifikasiPenerimaDonasi extends StatelessWidget {
   final String userId;
 
-  const NotifikasiPenerimaDonasi({Key? key, required this.userId})
-      : super(key: key);
+  const NotifikasiPenerimaDonasi({super.key, required this.userId});
 
   @override
   Widget build(BuildContext context) {
@@ -39,6 +39,15 @@ class NotifikasiPenerimaDonasi extends StatelessWidget {
                 title: Text(data['name'] ?? 'Nama Donatur'),
                 subtitle: Text(data['message'] ?? 'Pesan Notifikasi'),
                 trailing: Text(timeAgo),
+                onTap: () {
+                  String donationId = data[
+                      'donationId']; 
+                  Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => DetailDonasiMasuk(
+                      donationId: donationId,
+                    ),
+                  ));
+                },
               );
             }).toList(),
           );

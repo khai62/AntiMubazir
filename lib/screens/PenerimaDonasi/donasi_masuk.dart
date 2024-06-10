@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:anti/pustaka.dart';
+import 'package:anti/pustaka.dart'; // Pastikan import sesuai dengan struktur proyek Anda
 
 class DonasiMasuk extends StatefulWidget {
   final String userId;
@@ -22,9 +22,7 @@ class _DonasiMasukState extends State<DonasiMasuk> {
   @override
   void initState() {
     super.initState();
-    _stream = _reference
-        .where('userId', isEqualTo: widget.userId) // Filter berdasarkan userId
-        .snapshots();
+    _stream = _reference.where('userId', isEqualTo: widget.userId).snapshots();
   }
 
   void updateSearchQuery(String query) {
@@ -137,30 +135,23 @@ class _DonasiMasukState extends State<DonasiMasuk> {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.start,
                             children: [
-                              Container(
-                                height: 65,
-                                width: 65,
-                                decoration: const BoxDecoration(
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(32.5)),
-                                ),
+                              SizedBox(
+                                height: 130,
+                                width: 130,
                                 child: ClipRRect(
                                   borderRadius: const BorderRadius.all(
-                                      Radius.circular(40)),
-                                  child: (thisItem
-                                              .containsKey('profileImageUrl') &&
-                                          thisItem['profileImageUrl'] != null)
-                                      ? (thisItem['profileImageUrl'] is List &&
-                                              thisItem['profileImageUrl']
-                                                  .isNotEmpty)
+                                      Radius.circular(5)),
+                                  child: (thisItem.containsKey('images') &&
+                                          thisItem['images'] != null)
+                                      ? (thisItem['images'] is List &&
+                                              thisItem['images'].isNotEmpty)
                                           ? Image.network(
-                                              '${thisItem['profileImageUrl'][0]}',
+                                              '${thisItem['images'][0]}',
                                               fit: BoxFit.cover,
                                             )
-                                          : (thisItem['profileImageUrl']
-                                                  is String)
+                                          : (thisItem['images'] is String)
                                               ? Image.network(
-                                                  '${thisItem['profileImageUrl']}',
+                                                  '${thisItem['images']}',
                                                   fit: BoxFit.cover,
                                                 )
                                               : Container(color: Colors.grey)
@@ -216,10 +207,10 @@ class _DonasiMasukState extends State<DonasiMasuk> {
                             ],
                           ),
                           onTap: () {
-                            String userId = thisItem['userId'];
+                            String donationId = thisItem['id'];
                             Navigator.of(context).push(MaterialPageRoute(
                               builder: (context) => DetailDonasiMasuk(
-                                userId: userId,
+                                donationId: donationId,
                               ),
                             ));
                           },
