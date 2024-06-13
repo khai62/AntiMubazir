@@ -15,8 +15,10 @@ export 'screens/Donatur/person_tabbar_content/detail_donasi_saya.dart';
 export 'main.dart';
 
 export 'screens/donaturToPenerimaDonasi/detail_penerima_donasi.dart';
-export 'screens/donaturToPenerimaDonasi/tab/postingan.dart';
+export 'screens/PenerimaDonasi/personTab/postingan.dart';
 export 'screens/donaturToPenerimaDonasi/tab/tentang.dart';
+export 'screens/donaturToPenerimaDonasi/tab/postingan_detail_penerima_donasi.dart';
+export 'screens/PenerimaDonasi/personTab/detail_postingan_saya.dart';
 export 'screens/donaturToPenerimaDonasi/ketentuan_donasi.dart';
 export 'screens/donaturToPenerimaDonasi/donasi.dart';
 export 'screens/donaturToPenerimaDonasi/detail_donasi_masuk.dart';

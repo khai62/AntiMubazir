@@ -11,6 +11,7 @@ class NotifikasiPenerimaDonasi extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: const Text('Notifikasi'),
       ),
       body: StreamBuilder<QuerySnapshot>(
@@ -40,8 +41,7 @@ class NotifikasiPenerimaDonasi extends StatelessWidget {
                 subtitle: Text(data['message'] ?? 'Pesan Notifikasi'),
                 trailing: Text(timeAgo),
                 onTap: () {
-                  String donationId = data[
-                      'donationId']; 
+                  String donationId = data['donationId'];
                   Navigator.of(context).push(MaterialPageRoute(
                     builder: (context) => DetailDonasiMasuk(
                       donationId: donationId,

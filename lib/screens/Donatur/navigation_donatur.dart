@@ -26,7 +26,9 @@ class _NavigationDonaturState extends State<NavigationDonatur> {
       body: IndexedStack(
         index: _selectedIndex,
         children: <Widget>[
-          const HomeDonatur(),
+          const HomeDonatur(
+            postId: '',
+          ),
           const PenerimaDonasi(),
           if (currentUserId != null) NotifikasiDonatur(userId: currentUserId),
           const Person('Akun Saya'),

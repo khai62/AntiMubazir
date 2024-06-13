@@ -12,6 +12,7 @@ class Donasi extends StatefulWidget {
   const Donasi({super.key, required this.id});
 
   @override
+  // ignore: library_private_types_in_public_api
   _DonasiState createState() => _DonasiState();
 }
 

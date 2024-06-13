@@ -29,12 +29,13 @@ class _NavigationPenerimaDonasiState extends State<NavigationPenerimaDonasi> {
       body: IndexedStack(
         index: _selectedIndex,
         children: <Widget>[
-          const HomePenerimaDonasi(),
+          const HomePenerimaDonasi(
+            postId: '',
+          ),
           if (currentUserId != null)
             DonasiMasuk(
               userId: currentUserId,
             ),
-          const AddPostingan(),
           if (currentUserId != null)
             NotifikasiPenerimaDonasi(userId: currentUserId),
           const PersonPenerimaDonasi('Akun Saya'),
@@ -55,10 +56,6 @@ class _NavigationPenerimaDonasiState extends State<NavigationPenerimaDonasi> {
           BottomNavigationBarItem(
             icon: Icon(Icons.all_inclusive),
             label: 'donasimasuk',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.add),
-            label: 'addpostingan',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.notifications),

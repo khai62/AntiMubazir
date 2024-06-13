@@ -16,6 +16,7 @@ class _NotifikasiDonaturState extends State<NotifikasiDonatur> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: const Text('Notifikasi'),
       ),
       body: StreamBuilder<QuerySnapshot>(

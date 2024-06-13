@@ -230,6 +230,7 @@ class _AddPostinganState extends State<AddPostingan> {
                     Map<String, dynamic> dataToSend = {
                       'userId': userId,
                       'keterangan': itemName,
+                      'timestamp': FieldValue.serverTimestamp(),
                       'images': imageUrls,
                     };
 

@@ -230,7 +230,9 @@ class _DetailPenerimaDonasiState extends State<DetailPenerimaDonasi>
                           child: TabBarView(
                             controller: _tabController,
                             children: <Widget>[
-                              const PostinganSaya(),
+                              PostinganDetailPenerimaDonasi(
+                                userId: widget.id,
+                              ),
                               TentangPenerimaDonasi(
                                 id: data['userId'],
                               ),
