@@ -36,71 +36,73 @@ class _TentangPenerimaDonasiState extends State<TentangPenerimaDonasi>
   Widget build(BuildContext context) {
     return Scaffold(
       body: SingleChildScrollView(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 20),
-            StreamBuilder<DocumentSnapshot>(
-              stream: _stream,
-              builder: (BuildContext context, AsyncSnapshot snapshot) {
-                if (snapshot.hasError) {
-                  return Center(
-                      child: Text('Some error occurred ${snapshot.error}'));
-                }
-
-                if (snapshot.hasData) {
-                  DocumentSnapshot documentSnapshot = snapshot.data;
-                  if (!documentSnapshot.exists) {
-                    return const Center(child: Text('Document does not exist'));
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              StreamBuilder<DocumentSnapshot>(
+                stream: _stream,
+                builder: (BuildContext context, AsyncSnapshot snapshot) {
+                  if (snapshot.hasError) {
+                    return Center(
+                        child: Text('Some error occurred ${snapshot.error}'));
                   }
-                  Map<String, dynamic> data =
-                      documentSnapshot.data() as Map<String, dynamic>;
-
-                  return Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildRow(Icons.person, data['nama']),
-                      const SizedBox(
-                        height: 20,
-                      ),
-                      _buildRow(Icons.info, data['tentang']),
-                      const SizedBox(
-                        height: 20,
-                      ),
-                      _buildRow(Icons.location_on, data['alamat']),
-                      const SizedBox(
-                        height: 20,
-                      ),
-                      _buildRow(Icons.phone, data['noHp']),
-                      const SizedBox(
-                        height: 20,
-                      ),
-                      _buildRow(Icons.email, data['email']),
-                      const SizedBox(
-                        height: 20,
-                      ),
-                      _buildRow(Icons.rule, data['ketentuan']),
-                      const SizedBox(height: 20),
-                      if (data.containsKey('dropPoints')) ...[
-                        const Text(
-                          'Drop Points:',
-                          style: TextStyle(
-                              fontSize: 20, fontWeight: FontWeight.bold),
+          
+                  if (snapshot.hasData) {
+                    DocumentSnapshot documentSnapshot = snapshot.data;
+                    if (!documentSnapshot.exists) {
+                      return const Center(child: Text('Document does not exist'));
+                    }
+                    Map<String, dynamic> data =
+                        documentSnapshot.data() as Map<String, dynamic>;
+          
+                    return Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildRow(Icons.person, data['nama']),
+                        const SizedBox(
+                          height: 20,
                         ),
-                        const SizedBox(height: 10),
-                        for (var dropPoint in data['dropPoints'])
-                          _buildDropPoint(dropPoint),
+                        _buildRow(Icons.info, data['tentang']),
+                        const SizedBox(
+                          height: 20,
+                        ),
+                        _buildRow(Icons.location_on, data['alamat']),
+                        const SizedBox(
+                          height: 20,
+                        ),
+                        _buildRow(Icons.phone, data['noHp']),
+                        const SizedBox(
+                          height: 20,
+                        ),
+                        _buildRow(Icons.email, data['email']),
+                        const SizedBox(
+                          height: 20,
+                        ),
+                        _buildRow(Icons.rule, data['ketentuan']),
+                        const SizedBox(height: 20),
+                        if (data.containsKey('dropPoints')) ...[
+                          const Text(
+                            'Drop Points:',
+                            style: TextStyle(
+                                fontSize: 20, fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(height: 10),
+                          for (var dropPoint in data['dropPoints'])
+                            _buildDropPoint(dropPoint),
+                        ],
                       ],
-                    ],
-                  );
-                }
-
-                return const Center(child: CircularProgressIndicator());
-              },
-            ),
-          ],
+                    );
+                  }
+          
+                  return const Center(child: CircularProgressIndicator());
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );

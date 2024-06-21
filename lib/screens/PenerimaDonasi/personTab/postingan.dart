@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
-import 'detail_postingan_saya.dart'; // Pastikan Anda mengimport halaman detail postingan saya
+import 'package:anti/pustaka.dart'; // Pastikan Anda mengimport halaman detail postingan saya
 
 class PostinganSaya extends StatefulWidget {
   const PostinganSaya({super.key});

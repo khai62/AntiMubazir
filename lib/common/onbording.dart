@@ -111,14 +111,39 @@ class _OnbordingState extends State<Onbording> {
                   style: TextStyle(fontSize: 14, color: Colors.black),
                 )),
             const SizedBox(height: 20),
-            Container(
-              width: double.infinity,
-              height: 50,
-              decoration: const BoxDecoration(
-                color: Color(0xFF96B12D),
-                borderRadius: BorderRadius.all(Radius.circular(25)),
-              ),
-              child: TextButton(
+            InkWell(
+              onTap: () async {
+                switch (currentIndex) {
+                  case 0:
+                    await PermissionServices.requestNotificationPermission();
+                    break;
+                  case 1:
+                    await PermissionServices.requestLocationPermission();
+                    break;
+                  case 2:
+                    await PermissionServices.requestPhonePermission();
+                    break;
+                }
+                if (currentIndex == contents.length - 1) {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const LoginScreen(),
+                    ),
+                  );
+                }
+                _controller.nextPage(
+                  duration: const Duration(milliseconds: 100),
+                  curve: Curves.bounceIn,
+                );
+              },
+              child: Container(
+                width: double.infinity,
+                height: 50,
+                decoration: const BoxDecoration(
+                  color: Color(0xFF96B12D),
+                  borderRadius: BorderRadius.all(Radius.circular(25)),
+                ),
                 child: Text(
                   currentIndex == contents.length - 1
                       ? "Lanjutkan"
@@ -128,31 +153,6 @@ class _OnbordingState extends State<Onbording> {
                       fontWeight: FontWeight.bold,
                       color: Colors.white),
                 ),
-                onPressed: () async {
-                  switch (currentIndex) {
-                    case 0:
-                      await PermissionServices.requestNotificationPermission();
-                      break;
-                    case 1:
-                      await PermissionServices.requestLocationPermission();
-                      break;
-                    case 2:
-                      await PermissionServices.requestPhonePermission();
-                      break;
-                  }
-                  if (currentIndex == contents.length - 1) {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const LoginScreen(),
-                      ),
-                    );
-                  }
-                  _controller.nextPage(
-                    duration: const Duration(milliseconds: 100),
-                    curve: Curves.bounceIn,
-                  );
-                },
               ),
             ),
           ],

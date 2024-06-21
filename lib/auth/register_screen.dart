@@ -97,7 +97,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   const SizedBox(
                     height: 24,
                   ),
-                  DropdownButton<String>(
+                  DropdownButtonFormField<String>(
                     value: userType,
                     items: <String>['Donatur', 'Penerima Donasi']
                         .map((String value) {
@@ -119,16 +119,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
               Column(
                 children: [
-                  Container(
-                    alignment: Alignment.center,
-                    width: double.infinity,
-                    height: 50,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFF96B12D),
-                      borderRadius: BorderRadius.all(Radius.circular(25)),
-                    ),
-                    child: TextButton(
-                      onPressed: _signup,
+                  InkWell(
+                    onTap: _signup,
+                    child: Container(
+                      alignment: Alignment.center,
+                      width: double.infinity,
+                      height: 50,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF96B12D),
+                        borderRadius: BorderRadius.all(Radius.circular(25)),
+                      ),
                       child: const Text(
                         textAlign: TextAlign.center,
                         'Daftar',

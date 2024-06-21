@@ -5,7 +5,7 @@ import 'package:anti/pustaka.dart'; // Pastikan impor halaman detail yang benar
 class NotifikasiDonatur extends StatefulWidget {
   final String userId;
 
-  const NotifikasiDonatur({super.key, required this.userId});
+  const NotifikasiDonatur({Key? key, required this.userId}) : super(key: key);
 
   @override
   State<NotifikasiDonatur> createState() => _NotifikasiDonaturState();
@@ -23,6 +23,8 @@ class _NotifikasiDonaturState extends State<NotifikasiDonatur> {
         stream: FirebaseFirestore.instance
             .collection('notifications')
             .where('userId', isEqualTo: widget.userId)
+            .orderBy('timestamp',
+                descending: true) // Urutkan berdasarkan timestamp descending
             .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -41,17 +43,28 @@ class _NotifikasiDonaturState extends State<NotifikasiDonatur> {
 
               String timeAgo = getTimeAgo(dateTime);
 
-              return ListTile(
-                subtitle: Text(data['message'] ?? 'Pesan Notifikasi'),
-                trailing: Text(timeAgo),
-                onTap: () {
-                  String donationId = data['donationId'];
-                  Navigator.of(context).push(MaterialPageRoute(
-                    builder: (context) => DetailDonasiSaya(
-                      donationId: donationId,
-                    ),
-                  ));
-                },
+              return Container(
+                alignment: Alignment.centerLeft,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFD9E3B3),
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+                margin: const EdgeInsets.symmetric(
+                  horizontal: 15,
+                  vertical: 4.0,
+                ),
+                child: ListTile(
+                  onTap: () {
+                    String donationId = data['donationId'];
+                    Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) => DetailDonasiSaya(
+                        donationId: donationId,
+                      ),
+                    ));
+                  },
+                  subtitle: Text(data['message'] ?? 'Pesan Notifikasi'),
+                  trailing: Text(timeAgo),
+                ),
               );
             }).toList(),
           );

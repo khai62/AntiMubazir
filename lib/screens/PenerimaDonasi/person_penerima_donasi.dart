@@ -50,7 +50,10 @@ class _PersonPenerimaDonasiState extends State<PersonPenerimaDonasi>
           children: [
             Padding(
               padding: const EdgeInsets.only(
-                  left: 24, right: 24, top: 50, bottom: 24),
+                left: 24,
+                right: 24,
+                top: 50,
+              ),
               child: Column(
                 children: [
                   Row(
@@ -64,7 +67,13 @@ class _PersonPenerimaDonasiState extends State<PersonPenerimaDonasi>
                             fontWeight: FontWeight.bold),
                       ),
                       IconButton(
-                          onPressed: () {}, icon: const Icon(Icons.settings))
+                          onPressed: () {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => const Setting()));
+                          },
+                          icon: const Icon(Icons.settings))
                     ],
                   ),
                   const SizedBox(

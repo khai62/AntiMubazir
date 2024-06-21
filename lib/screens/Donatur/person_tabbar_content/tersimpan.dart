@@ -21,14 +21,17 @@ class _TersimpanState extends State<Tersimpan> {
           .get();
       List<dynamic>? savedPostsIds = userDoc['savedPost'] as List<dynamic>?;
 
-      if (savedPostsIds != null) {
+      if (savedPostsIds != null && savedPostsIds.isNotEmpty) {
         List<Map<String, dynamic>> savedPosts = [];
-        for (String postId in savedPostsIds) {
+        for (var postId in savedPostsIds) {
           DocumentSnapshot postDoc = await FirebaseFirestore.instance
               .collection('postigan')
               .doc(postId)
               .get();
-          savedPosts.add(postDoc.data() as Map<String, dynamic>);
+          var postData = postDoc.data();
+          if (postData != null) {
+            savedPosts.add(postData as Map<String, dynamic>);
+          }
         }
         return savedPosts;
       } else {

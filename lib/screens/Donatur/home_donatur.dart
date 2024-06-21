@@ -68,6 +68,11 @@ class _HomeDonaturState extends State<HomeDonatur> {
 
   @override
   Widget build(BuildContext context) {
+    String currentUserId = FirebaseAuth.instance.currentUser!.uid;
+    String recipientId = 'someRecipientId';
+
+    String chatId = getChatId(currentUserId, recipientId);
+
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
@@ -80,7 +85,10 @@ class _HomeDonaturState extends State<HomeDonatur> {
                 fontWeight: FontWeight.bold)),
       ),
       body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance.collection('postigan').snapshots(),
+        stream: FirebaseFirestore.instance
+            .collection('postigan')
+            .orderBy('timestamp', descending: true)
+            .snapshots(),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
             return const Center(child: CircularProgressIndicator());
@@ -247,7 +255,16 @@ class _HomeDonaturState extends State<HomeDonatur> {
                               ),
                               IconButton(
                                 icon: const Icon(Icons.comment_bank_outlined),
-                                onPressed: () {},
+                                onPressed: () {
+                                  // Navigator.push(
+                                  //   context,
+                                  //   MaterialPageRoute(
+                                  //     builder: (context) => ChatScreen(
+                                  //         chatId: chatId,
+                                  //         recipientName: 'Recipient Name'),
+                                  //   ),
+                                  // );
+                                },
                               ),
                             ],
                           ),

@@ -11,7 +11,6 @@ class HomePenerimaDonasi extends StatefulWidget {
   const HomePenerimaDonasi({super.key, required this.postId});
 
   @override
-  // ignore: library_private_types_in_public_api
   _HomePenerimaDonasiState createState() => _HomePenerimaDonasiState();
 }
 
@@ -68,6 +67,8 @@ class _HomePenerimaDonasiState extends State<HomePenerimaDonasi> {
 
   @override
   Widget build(BuildContext context) {
+    String currentUserId = FirebaseAuth.instance.currentUser!.uid;
+
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
@@ -93,16 +94,15 @@ class _HomePenerimaDonasiState extends State<HomePenerimaDonasi> {
             itemBuilder: (context, index) {
               var postinganDoc = postinganDocs[index];
               var postinganData = postinganDoc.data() as Map<String, dynamic>?;
-              Timestamp timestamp = postinganDoc['timestamp'] as Timestamp;
-              DateTime dateTime = timestamp.toDate();
-
-              String timeAgo = getTimeAgo(dateTime);
-
               if (postinganData == null) {
                 return const ListTile(
                   title: Text('Postingan tidak ditemukan'),
                 );
               }
+
+              Timestamp timestamp = postinganDoc['timestamp'] as Timestamp;
+              DateTime dateTime = timestamp.toDate();
+              String timeAgo = getTimeAgo(dateTime);
 
               String userId = postinganData['userId'];
 
@@ -246,7 +246,20 @@ class _HomePenerimaDonasiState extends State<HomePenerimaDonasi> {
                               ),
                               IconButton(
                                 icon: const Icon(Icons.comment_bank_outlined),
-                                onPressed: () {},
+                                onPressed: () {
+                                  // String chatId =
+                                  //     getChatId(currentUserId, userId);
+                                  // Navigator.push(
+                                  //   context,
+                                  //   MaterialPageRoute(
+                                  //     builder: (context) => ChatScreen(
+                                  //       chatId: chatId,
+                                  //       recipientName: profileData['nama'],
+                                  //       id: 'userId',
+                                  //     ),
+                                  //   ),
+                                  // );
+                                },
                               ),
                             ],
                           ),
@@ -266,9 +279,7 @@ class _HomePenerimaDonasiState extends State<HomePenerimaDonasi> {
                           children: [
                             if (postinganData['keterangan'] != null)
                               SizedBox(
-                                width: MediaQuery.of(context)
-                                    .size
-                                    .width, // Menggunakan lebar layar penuh
+                                width: MediaQuery.of(context).size.width,
                                 child: ExpandableText(
                                   postinganData['keterangan'],
                                   expandText: 'Baca Selengkapnya',

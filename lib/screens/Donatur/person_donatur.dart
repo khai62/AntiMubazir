@@ -62,7 +62,14 @@ class _PersonState extends State<Person> with TickerProviderStateMixin {
                         color: Colors.black,
                         fontWeight: FontWeight.bold),
                   ),
-                  IconButton(onPressed: () {}, icon: const Icon(Icons.settings))
+                  IconButton(
+                      onPressed: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const Setting()));
+                      },
+                      icon: const Icon(Icons.settings))
                 ],
               ),
               const SizedBox(

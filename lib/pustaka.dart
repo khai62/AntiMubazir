@@ -22,6 +22,9 @@ export 'screens/PenerimaDonasi/personTab/detail_postingan_saya.dart';
 export 'screens/donaturToPenerimaDonasi/ketentuan_donasi.dart';
 export 'screens/donaturToPenerimaDonasi/donasi.dart';
 export 'screens/donaturToPenerimaDonasi/detail_donasi_masuk.dart';
+export 'screens/donaturToPenerimaDonasi/chat.dart';
+export 'screens/donaturToPenerimaDonasi/setting.dart';
+export 'utils/utils.dart';
 
 export 'screens/PenerimaDonasi/home_penerima_donasi.dart';
 export 'screens/PenerimaDonasi/navigation_penerima_donasi.dart';
