@@ -17,10 +17,8 @@ class _SettingState extends State<Setting> {
         child: IconButton(
           icon: const Icon(Icons.login_outlined),
           onPressed: () {
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => const RegisterScreen()));
+            Navigator.push(context,
+                MaterialPageRoute(builder: (context) => const LoginScreen()));
           },
         ),
       ),

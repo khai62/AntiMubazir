@@ -77,4 +77,15 @@ class AuthService {
       log('something went wrong');
     }
   }
+
+  Future<bool> checkIfEmailInUse(String email) async {
+    try {
+      // ignore: deprecated_member_use
+      final signInMethods = await _auth.fetchSignInMethodsForEmail(email);
+      return signInMethods.isNotEmpty;
+    } catch (e) {
+      log('Error checking if email is in use: $e');
+      return false;
+    }
+  }
 }

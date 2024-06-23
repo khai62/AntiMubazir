@@ -35,8 +35,13 @@ class _HomePenerimaDonasiState extends State<HomePenerimaDonasi> {
           builder: (context) {
             return const SafeArea(
               child: Padding(
-                padding: EdgeInsets.all(24),
-                child: Text('Berhasil disimpan'),
+                padding: EdgeInsets.all(20),
+                child: SizedBox(
+                    width: double.infinity,
+                    child: Text(
+                      'Berhasil disimpan',
+                      textAlign: TextAlign.center,
+                    )),
               ),
             );
           },
@@ -48,7 +53,12 @@ class _HomePenerimaDonasiState extends State<HomePenerimaDonasi> {
               return SafeArea(
                   child: Padding(
                 padding: const EdgeInsets.all(24),
-                child: Text('Gagal menyimpan posingan: $e'),
+                child: SizedBox(
+                    width: double.infinity,
+                    child: Text(
+                      'Gagal menyimpan posingan: $e',
+                      textAlign: TextAlign.center,
+                    )),
               ));
             });
       }
@@ -59,7 +69,12 @@ class _HomePenerimaDonasiState extends State<HomePenerimaDonasi> {
             return const SafeArea(
                 child: Padding(
               padding: EdgeInsets.all(24),
-              child: Text('Gagal menyimpan postingan'),
+              child: SizedBox(
+                  width: double.infinity,
+                  child: Text(
+                    'Gagal menyimpan postingan',
+                    textAlign: TextAlign.center,
+                  )),
             ));
           });
     }
@@ -237,29 +252,11 @@ class _HomePenerimaDonasiState extends State<HomePenerimaDonasi> {
                               IconButton(
                                 icon:
                                     const Icon(Icons.favorite_border_outlined),
-                                onPressed: () {
-                                  Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) => LoginScreen()));
-                                },
+                                onPressed: () {},
                               ),
                               IconButton(
                                 icon: const Icon(Icons.comment_bank_outlined),
-                                onPressed: () {
-                                  // String chatId =
-                                  //     getChatId(currentUserId, userId);
-                                  // Navigator.push(
-                                  //   context,
-                                  //   MaterialPageRoute(
-                                  //     builder: (context) => ChatScreen(
-                                  //       chatId: chatId,
-                                  //       recipientName: profileData['nama'],
-                                  //       id: 'userId',
-                                  //     ),
-                                  //   ),
-                                  // );
-                                },
+                                onPressed: () {},
                               ),
                             ],
                           ),

@@ -385,7 +385,7 @@ class _AddScreenState extends State<AddScreen> {
                 ),
                 TextFormField(
                   controller: _controllerEndTime,
-                  style: const TextStyle(fontSize: 14, color: Colors.black),
+                  style:  const TextStyle(fontSize: 14, color: Colors.black),
                   decoration: InputDecoration(
                     hintText: 'Jam berakhir',
                     enabledBorder: const UnderlineInputBorder(

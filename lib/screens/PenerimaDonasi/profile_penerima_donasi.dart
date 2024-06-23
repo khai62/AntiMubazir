@@ -222,7 +222,8 @@ class _ProfilePenerimaDonasiState extends State<ProfilePenerimaDonasi> {
                   controller: _namaController,
                   style: const TextStyle(fontSize: 14, color: Colors.black),
                   decoration: const InputDecoration(
-                      labelText: 'Nama yayasan',
+                      labelText:
+                          'Nama yayasan/ organisasi / penerima donasi/ organisasi / penerima donasi',
                       enabledBorder: UnderlineInputBorder(
                           borderSide: BorderSide(
                         color: Colors.black,
@@ -490,7 +491,7 @@ class _ProfilePenerimaDonasiState extends State<ProfilePenerimaDonasi> {
                       style: const TextStyle(fontSize: 14, color: Colors.black),
                       controller: _namaController,
                       decoration: const InputDecoration(
-                        labelText: 'Nama yayasan',
+                        labelText: 'Nama yayasan/ organisasi / penerima donasi',
                         enabledBorder: UnderlineInputBorder(
                             borderSide: BorderSide(
                           color: Colors.black,

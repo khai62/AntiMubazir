@@ -1,6 +1,8 @@
+import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:anti/pustaka.dart'; // Pastikan Anda mengimport halaman detail postingan saya
 
 class Tersimpan extends StatefulWidget {
   const Tersimpan({super.key});
@@ -30,7 +32,10 @@ class _TersimpanState extends State<Tersimpan> {
               .get();
           var postData = postDoc.data();
           if (postData != null) {
-            savedPosts.add(postData as Map<String, dynamic>);
+            savedPosts.add({
+              'postId': postDoc.id,
+              ...postData as Map<String, dynamic>,
+            });
           }
         }
         return savedPosts;
@@ -52,40 +57,91 @@ class _TersimpanState extends State<Tersimpan> {
             return const Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
             print('${snapshot.error}');
-            return Center(child: Text('Error: ${snapshot.error}'));
+            return const Center(child: Text('Tidak ada postingan tersimpan'));
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
             return const Center(child: Text('Tidak ada postingan tersimpan'));
           } else {
             List<Map<String, dynamic>> savedPosts = snapshot.data!;
-            return ListView.builder(
+            return StaggeredGridView.countBuilder(
+              crossAxisCount: 6,
               itemCount: savedPosts.length,
-              itemBuilder: (context, index) {
+              itemBuilder: (BuildContext context, int index) {
                 var postinganData = savedPosts[index];
-                return ListTile(
-                  title: Text(postinganData['keterangan'] ?? 'No description'),
-                  subtitle: postinganData['timestamp'] != null
-                      ? Text(getTimeAgo(
-                          (postinganData['timestamp'] as Timestamp).toDate()))
-                      : null,
+                var images = postinganData['images'] as List<dynamic>? ?? [];
+
+                return GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            DetailPostingan(postData: postinganData),
+                      ),
+                    );
+                  },
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8.0),
+                      color: Colors.grey[200],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (images.isNotEmpty)
+                          Image.network(
+                            images[0],
+                            fit: BoxFit.cover,
+                            width: MediaQuery.of(context).size.width,
+                            height: 150,
+                          )
+                        else
+                          Container(
+                            height: 150,
+                            color: Colors.grey,
+                            child: const Center(
+                              child: Text('Tidak ada gambar'),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
                 );
               },
+              staggeredTileBuilder: (int index) => const StaggeredTile.fit(2),
+              mainAxisSpacing: 4.0,
+              crossAxisSpacing: 4.0,
             );
           }
         },
       ),
     );
   }
+}
 
-  String getTimeAgo(DateTime dateTime) {
-    Duration difference = DateTime.now().difference(dateTime);
-    if (difference.inDays > 0) {
-      return '${difference.inDays} h';
-    } else if (difference.inHours > 0) {
-      return '${difference.inHours} j';
-    } else if (difference.inMinutes > 0) {
-      return '${difference.inMinutes} min';
-    } else {
-      return 'Baru saja';
-    }
+class DetailPostingan extends StatelessWidget {
+  final Map<String, dynamic> postData;
+
+  const DetailPostingan({super.key, required this.postData});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(postData['keterangan'] ?? 'Detail Postingan'),
+      ),
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (postData['images'] != null && postData['images'].isNotEmpty)
+              Image.network((postData['images'] as List<dynamic>)[0]),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text(postData['keterangan'] ?? 'No description'),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

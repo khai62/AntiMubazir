@@ -36,8 +36,13 @@ class _HomeDonaturState extends State<HomeDonatur> {
           builder: (context) {
             return const SafeArea(
               child: Padding(
-                padding: EdgeInsets.all(24),
-                child: Text('Berhasil disimpan'),
+                padding: EdgeInsets.all(20),
+                child: SizedBox(
+                    width: double.infinity,
+                    child: Text(
+                      'Berhasil disimpan',
+                      textAlign: TextAlign.center,
+                    )),
               ),
             );
           },
@@ -49,7 +54,12 @@ class _HomeDonaturState extends State<HomeDonatur> {
               return SafeArea(
                   child: Padding(
                 padding: const EdgeInsets.all(24),
-                child: Text('Gagal menyimpan posingan: $e'),
+                child: SizedBox(
+                    width: double.infinity,
+                    child: Text(
+                      'Gagal menyimpan posingan: $e',
+                      textAlign: TextAlign.center,
+                    )),
               ));
             });
       }
@@ -60,7 +70,12 @@ class _HomeDonaturState extends State<HomeDonatur> {
             return const SafeArea(
                 child: Padding(
               padding: EdgeInsets.all(24),
-              child: Text('Gagal menyimpan postingan'),
+              child: SizedBox(
+                  width: double.infinity,
+                  child: Text(
+                    'Gagal menyimpan postingan',
+                    textAlign: TextAlign.center,
+                  )),
             ));
           });
     }

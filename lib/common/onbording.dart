@@ -138,6 +138,7 @@ class _OnbordingState extends State<Onbording> {
                 );
               },
               child: Container(
+                alignment: Alignment.center,
                 width: double.infinity,
                 height: 50,
                 decoration: const BoxDecoration(
@@ -145,6 +146,7 @@ class _OnbordingState extends State<Onbording> {
                   borderRadius: BorderRadius.all(Radius.circular(25)),
                 ),
                 child: Text(
+                  textAlign: TextAlign.center,
                   currentIndex == contents.length - 1
                       ? "Lanjutkan"
                       : "Lanjutkan",
