@@ -1,3 +1,9 @@
+// AntiMubazir
+// Hak Cipta (c) [2024] [AntiMubazir]
+// Perangkat Lunak ini dilisensikan di bawah Perjanjian Lisensi Pengguna Akhir (EULA).
+// Lihat file EULA.txt di root proyek untuk informasi lebih lanjut.
+
+
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:anti/firebase_options.dart';
